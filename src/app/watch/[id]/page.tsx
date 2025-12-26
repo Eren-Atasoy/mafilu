@@ -3,8 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import { bunnyStream } from "@/lib/bunny";
 import { ViewCounter } from "@/components/video/view-counter";
 import { RelatedMovies } from "@/components/video/related-movies";
+import { MovieActions } from "@/components/video/movie-actions";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Calendar, Share2, ThumbsUp } from "lucide-react";
+import { Eye, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface PageProps {
@@ -103,16 +104,7 @@ export default async function WatchPage({ params }: PageProps) {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center gap-3 border-y border-[#7C3AED]/10 py-4">
-                            <Button variant="ghost" className="hover:bg-[#7C3AED]/10 hover:text-[#C4B5FD]">
-                                <ThumbsUp className="w-5 h-5 mr-2" />
-                                Beğen
-                            </Button>
-                            <Button variant="ghost" className="hover:bg-[#7C3AED]/10 hover:text-[#C4B5FD]">
-                                <Share2 className="w-5 h-5 mr-2" />
-                                Paylaş
-                            </Button>
-                        </div>
+                        <MovieActions movieId={id} movieTitle={movie.title} />
 
                         {/* Description */}
                         <div className="bg-[#150A24] rounded-2xl p-6 border border-[#7C3AED]/10">
