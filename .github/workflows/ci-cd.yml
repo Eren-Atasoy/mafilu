@@ -42,13 +42,13 @@ jobs:
           CI: true
 
   # =========================================
-  # Build & Push Docker Image
+  # Build Docker Images (For Backend Services)
   # =========================================
-  build:
-    name: Build Docker Image
+  build-push:
+    name: Build & Push Services
     runs-on: ubuntu-latest
     needs: quality
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main'
     
     permissions:
       contents: read
@@ -76,19 +76,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          tags: type=sha,prefix=
 
-      - name: Build and push
+      - name: Build and push App Image (for background workers)
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -97,57 +93,33 @@ jobs:
             NEXT_PUBLIC_BUNNY_CDN_URL=${{ secrets.NEXT_PUBLIC_BUNNY_CDN_URL }}
 
   # =========================================
-  # Deploy to Staging (develop branch)
+  # Deploy Backend Infrastucture to VPS
   # =========================================
-  deploy-staging:
-    name: Deploy to Staging
+  deploy-infrastructure:
+    name: Deploy Backend & Redis
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/develop'
-    environment: staging
-    
-    steps:
-      - name: Deploy to staging server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.STAGING_HOST }}
-          username: ${{ secrets.STAGING_USER }}
-          key: ${{ secrets.STAGING_SSH_KEY }}
-          script: |
-            cd /opt/mafilu
-            docker compose pull
-            docker compose --profile production up -d --remove-orphans
-            docker system prune -f
-
-      - name: Health check
-        run: |
-          sleep 30
-          curl --fail ${{ secrets.STAGING_URL }}/api/health || exit 1
-
-  # =========================================
-  # Deploy to Production (main branch)
-  # =========================================
-  deploy-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: build
+    needs: build-push
     if: github.ref == 'refs/heads/main'
     environment: production
     
     steps:
-      - name: Deploy to production server
+      - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
+        continue-on-error: true # Prevent failure if secrets are missing
         with:
           host: ${{ secrets.PRODUCTION_HOST }}
           username: ${{ secrets.PRODUCTION_USER }}
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           script: |
             cd /opt/mafilu
-            docker compose pull
-            docker compose --profile production up -d --remove-orphans
+            
+            # Pull latest images
+            docker compose pull redis
+            # docker compose pull ai-service  # Uncomment when AI service is ready
+            
+            # Start Infrastructure Services (Redis, Databases, AI)
+            # We do NOT start 'app' here because Frontend/API runs on Vercel
+            docker compose up -d redis
+            
             docker system prune -f
 
-      - name: Health check
-        run: |
-          sleep 30
-          curl --fail ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
