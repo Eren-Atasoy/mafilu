@@ -1,0 +1,481 @@
+/* Google Fonts - must be first */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* ====================================================
+   MAFILU - NOCTURNAL CINEMA DESIGN SYSTEM
+   Philosophy: Night Purple & Mystical Minimalism
+   ==================================================== */
+
+:root {
+  /* Night Purple Palette */
+  --night-base: #1A0B2E;
+  --night-elevated: #2B0F3F;
+  --night-surface: #150A24;
+  --obsidian: #050505;
+  --obsidian-soft: #0A0A0F;
+
+  /* Purple Accents */
+  --pulsar-purple: #7C3AED;
+  --pulsar-glow: rgba(124, 58, 237, 0.15);
+  --pulsar-highlight: #A855F7;
+  --neon-violet: #8B5CF6;
+
+  /* Text Colors */
+  --text-primary: #F5F3FF;
+  --text-secondary: #A197B0;
+  --text-muted: #6B5F7C;
+
+  /* Gradients */
+  --gradient-purple: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #7C3AED 100%);
+  --gradient-night: linear-gradient(180deg, #1A0B2E 0%, #0A0510 100%);
+  --gradient-glow: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.2) 0%, transparent 70%);
+
+  /* Effects */
+  --glass-bg: rgba(26, 11, 46, 0.4);
+  --glass-border: rgba(124, 58, 237, 0.1);
+  --backdrop-blur: 20px;
+
+  /* Transitions */
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-headline: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  --letter-spacing: 0.02em;
+}
+
+@theme inline {
+  --color-background: var(--obsidian-soft);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-body);
+}
+
+/* ====================================================
+   BASE STYLES
+   ==================================================== */
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--obsidian-soft);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  letter-spacing: var(--letter-spacing);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Film Grain Overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ====================================================
+   TYPOGRAPHY
+   ==================================================== */
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-headline);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.headline-serif {
+  font-family: var(--font-headline);
+}
+
+.text-gradient {
+  background: var(--gradient-purple);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ====================================================
+   GLASSMORPHISM COMPONENTS
+   ==================================================== */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  background: linear-gradient(135deg,
+      rgba(26, 11, 46, 0.6) 0%,
+      rgba(43, 15, 63, 0.3) 100%);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid transparent;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-slow), box-shadow var(--transition-slow);
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(135deg,
+      rgba(124, 58, 237, 0.3) 0%,
+      transparent 50%,
+      rgba(168, 85, 247, 0.2) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glass-card:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg) translateY(-8px);
+  box-shadow:
+    0 25px 50px -12px rgba(124, 58, 237, 0.25),
+    0 0 80px -20px rgba(124, 58, 237, 0.4);
+}
+
+/* Inner Shadow Effect */
+.inner-shadow {
+  box-shadow:
+    inset 0 2px 10px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 10px rgba(124, 58, 237, 0.1);
+}
+
+/* ====================================================
+   PULSAR GLOW EFFECTS
+   ==================================================== */
+
+.pulsar-glow {
+  position: relative;
+}
+
+.pulsar-glow::after {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(ellipse at center,
+      rgba(124, 58, 237, 0.15) 0%,
+      transparent 70%);
+  pointer-events: none;
+  animation: pulsar-breathe 4s ease-in-out infinite;
+}
+
+@keyframes pulsar-breathe {
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Pulsing Star Loader */
+.pulsar-loader {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.pulsar-loader::before,
+.pulsar-loader::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--pulsar-purple);
+}
+
+.pulsar-loader::before {
+  animation: pulsar-expand 1.5s ease-in-out infinite;
+}
+
+.pulsar-loader::after {
+  animation: pulsar-expand 1.5s ease-in-out infinite 0.75s;
+}
+
+@keyframes pulsar-expand {
+  0% {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ====================================================
+   GHOST BUTTONS
+   ==================================================== */
+
+.btn-ghost {
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: var(--text-primary);
+  padding: 12px 32px;
+  border-radius: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  transition: all var(--transition-slow);
+}
+
+.btn-ghost::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: radial-gradient(ellipse at center,
+      rgba(124, 58, 237, 0.2) 0%,
+      transparent 70%);
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.btn-ghost:hover::before {
+  opacity: 1;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(124, 58, 237, 0.6);
+  transform: translateY(-2px);
+}
+
+/* Primary Ghost with Fill Effect */
+.btn-primary-ghost {
+  position: relative;
+  background: transparent;
+  border: 1px solid var(--pulsar-purple);
+  color: var(--pulsar-purple);
+  padding: 14px 36px;
+  border-radius: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  transition: all var(--transition-slow);
+}
+
+.btn-primary-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-purple);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.btn-primary-ghost::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  background: radial-gradient(ellipse at center,
+      rgba(124, 58, 237, 0.4) 0%,
+      transparent 60%);
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity var(--transition-slow);
+}
+
+.btn-primary-ghost span {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-primary-ghost:hover {
+  color: white;
+  border-color: transparent;
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px -15px rgba(124, 58, 237, 0.5);
+}
+
+.btn-primary-ghost:hover::before {
+  opacity: 1;
+}
+
+.btn-primary-ghost:hover::after {
+  opacity: 1;
+}
+
+/* ====================================================
+   KEN BURNS HERO EFFECT
+   ==================================================== */
+
+.ken-burns {
+  animation: ken-burns 20s ease-in-out infinite alternate;
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+
+  100% {
+    transform: scale(1.1) translate(-2%, -2%);
+  }
+}
+
+/* ====================================================
+   FLOATING NAVIGATION
+   ==================================================== */
+
+.nav-floating {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  transition: all var(--transition-slow);
+}
+
+.nav-floating.scrolled {
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+}
+
+.nav-floating.hidden {
+  transform: translateY(-100%);
+}
+
+/* Gradient Border Effect */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+      rgba(124, 58, 237, 0.5) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(168, 85, 247, 0.3) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ====================================================
+   UTILITY CLASSES
+   ==================================================== */
+
+.bg-night {
+  background: var(--night-base);
+}
+
+.bg-night-elevated {
+  background: var(--night-elevated);
+}
+
+.bg-obsidian {
+  background: var(--obsidian);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+/* Selection Color */
+::selection {
+  background: rgba(124, 58, 237, 0.4);
+  color: white;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--obsidian);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--night-elevated);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pulsar-purple);
+}
+
+/* ====================================================
+   SPRING ANIMATIONS (for Framer Motion reference)
+   ==================================================== */
+
+.spring-hover {
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.spring-hover:hover {
+  transform: scale(1.02);
+}
+
+/* Cinematic Fade */
+.fade-in {
+  animation: cinematic-fade 0.8s ease-out forwards;
+}
+
+@keyframes cinematic-fade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

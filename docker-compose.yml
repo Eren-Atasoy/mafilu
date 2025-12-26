@@ -1,0 +1,131 @@
+services:
+  # =========================================
+  # Main Next.js Application (Production)
+  # =========================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-}
+        - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+        - NEXT_PUBLIC_BUNNY_CDN_URL=${NEXT_PUBLIC_BUNNY_CDN_URL:-}
+    container_name: mafilu-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    env_file:
+      - path: .env.production
+        required: false
+    networks:
+      - mafilu-network
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    profiles:
+      - production
+
+  # =========================================
+  # Development Mode (Hot Reload)
+  # =========================================
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: mafilu-app-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - REDIS_URL=redis://redis:6379
+      - WATCHPACK_POLLING=true
+    env_file:
+      - path: .env.local
+        required: false
+    networks:
+      - mafilu-network
+    depends_on:
+      - redis
+    profiles:
+      - development
+
+  # =========================================
+  # Redis Cache
+  # =========================================
+  redis:
+    image: redis:7-alpine
+    container_name: mafilu-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - mafilu-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # =========================================
+  # AI Video Analysis Service (Future - GPU)
+  # =========================================
+  ai-service:
+    build:
+      context: ./services/ai-analyzer
+      dockerfile: Dockerfile
+    container_name: mafilu-ai
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ai-models:/app/models
+      - upload-temp:/app/temp
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - MODEL_PATH=/app/models
+    networks:
+      - mafilu-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - ai
+
+# =========================================
+# Networks
+# =========================================
+networks:
+  mafilu-network:
+    driver: bridge
+    name: mafilu-network
+
+# =========================================
+# Volumes
+# =========================================
+volumes:
+  redis-data:
+    name: mafilu-redis-data
+  ai-models:
+    name: mafilu-ai-models
+  upload-temp:
+    name: mafilu-upload-temp
