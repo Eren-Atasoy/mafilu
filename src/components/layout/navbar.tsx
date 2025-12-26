@@ -52,8 +52,8 @@ export function Navbar() {
         window.location.href = "/";
     };
 
-    // Hide navbar on auth pages
-    if (pathname?.startsWith("/login") || pathname?.startsWith("/signup") || pathname?.startsWith("/forgot-password") || pathname?.startsWith("/reset-password")) {
+    // Hide navbar on auth pages and homepage (has its own design)
+    if (pathname === "/" || pathname?.startsWith("/login") || pathname?.startsWith("/signup") || pathname?.startsWith("/forgot-password") || pathname?.startsWith("/reset-password")) {
         return null;
     }
 
