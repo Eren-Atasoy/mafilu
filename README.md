@@ -171,8 +171,8 @@ Copy `.env.example` to `.env.local` and configure:
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
-| `BUNNY_API_KEY` | Bunny.net API key |
-| `BUNNY_LIBRARY_ID` | Bunny.net Stream library ID |
+| `BUNNY_STREAM_API_KEY` | Bunny.net Stream API key |
+| `BUNNY_STREAM_LIBRARY_ID` | Bunny.net Stream library ID |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
 
