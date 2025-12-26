@@ -13,6 +13,7 @@ export default function LoginPage() {
     const supabase = createClient();
 
     const isConfirmed = searchParams.get("confirmed") === "true";
+    const isPasswordReset = searchParams.get("reset") === "success";
     const authError = searchParams.get("error");
 
     const [email, setEmail] = useState("");
@@ -112,6 +113,22 @@ export default function LoginPage() {
                             >
                                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
                                 <p className="text-green-400">E-posta adresiniz onaylandı! Şimdi giriş yapabilirsiniz.</p>
+                            </motion.div>
+                        )}
+
+                        {/* Success Message - Password Reset */}
+                        {isPasswordReset && (
+                            <motion.div
+                                className="p-4 rounded-xl text-sm flex items-center gap-3"
+                                style={{
+                                    background: "rgba(34, 197, 94, 0.1)",
+                                    border: "1px solid rgba(34, 197, 94, 0.2)",
+                                }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                            >
+                                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                <p className="text-green-400">Şifreniz başarıyla güncellendi! Yeni şifrenizle giriş yapabilirsiniz.</p>
                             </motion.div>
                         )}
 
