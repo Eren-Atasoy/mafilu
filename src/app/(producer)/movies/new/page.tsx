@@ -9,9 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     ArrowLeft,
-    Upload,
-    FileVideo,
-    X,
     Check,
     AlertCircle
 } from "lucide-react";
@@ -43,28 +40,6 @@ export default function NewMoviePage() {
     const [releaseYear, setReleaseYear] = useState(new Date().getFullYear().toString());
     const [tags, setTags] = useState("");
 
-    // Video state (will be implemented with Bunny.net later)
-    const [videoFile, setVideoFile] = useState<File | null>(null);
-    const [uploadProgress, _setUploadProgress] = useState(0);
-
-    const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // Validate file type
-            if (!file.type.startsWith("video/")) {
-                setError("Lütfen geçerli bir video dosyası seçin");
-                return;
-            }
-            // Validate file size (max 5GB)
-            if (file.size > 5 * 1024 * 1024 * 1024) {
-                setError("Video dosyası 5GB'dan küçük olmalıdır");
-                return;
-            }
-            setVideoFile(file);
-            setError(null);
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent, action: "draft" | "submit") => {
         e.preventDefault();
         setIsLoading(true);
@@ -79,7 +54,7 @@ export default function NewMoviePage() {
             }
 
             // Create movie record
-            const { data: _movie, error: movieError } = await supabase
+            const { data: movie, error: movieError } = await supabase
                 .from("movies")
                 .insert({
                     producer_id: user.id,
@@ -100,10 +75,8 @@ export default function NewMoviePage() {
                 return;
             }
 
-            // TODO: Upload video to Bunny.net and update movie with bunny_video_id
-            // This will be implemented when Bunny.net integration is added
-
-            router.push("/movies");
+            // Redirect to edit page for video upload
+            router.push(`/movies/${movie.id}/edit`);
             router.refresh();
         } catch (err) {
             console.error(err);
@@ -140,72 +113,11 @@ export default function NewMoviePage() {
                 <div className="grid lg:grid-cols-3 gap-6">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Video Upload */}
-                        <Card variant="glass">
-                            <CardHeader>
-                                <CardTitle className="text-lg">Video Dosyası</CardTitle>
-                                <CardDescription>MP4, MOV veya AVI formatında video yükleyin (maks. 5GB)</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {!videoFile ? (
-                                    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-violet-500 hover:bg-violet-500/5 transition-colors">
-                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                            <Upload className="w-10 h-10 text-slate-500 mb-3" />
-                                            <p className="mb-2 text-sm text-slate-400">
-                                                <span className="font-semibold text-violet-400">Tıklayarak seçin</span> veya sürükleyip bırakın
-                                            </p>
-                                            <p className="text-xs text-slate-500">MP4, MOV, AVI (maks. 5GB)</p>
-                                        </div>
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            accept="video/*"
-                                            onChange={handleVideoSelect}
-                                        />
-                                    </label>
-                                ) : (
-                                    <div className="p-4 bg-slate-800/50 rounded-xl">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center">
-                                                <FileVideo className="w-6 h-6 text-violet-400" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-white truncate">{videoFile.name}</p>
-                                                <p className="text-sm text-slate-400">
-                                                    {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
-                                                </p>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setVideoFile(null)}
-                                                className="p-2 text-slate-400 hover:text-red-400 transition-colors"
-                                            >
-                                                <X className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                        {uploadProgress > 0 && uploadProgress < 100 && (
-                                            <div className="mt-4">
-                                                <div className="flex justify-between text-sm mb-1">
-                                                    <span className="text-slate-400">Yükleniyor...</span>
-                                                    <span className="text-violet-400">{uploadProgress}%</span>
-                                                </div>
-                                                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 transition-all duration-300"
-                                                        style={{ width: `${uploadProgress}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-
                         {/* Movie Details */}
                         <Card variant="glass">
                             <CardHeader>
                                 <CardTitle className="text-lg">Film Bilgileri</CardTitle>
+                                <CardDescription>Video dosyasını bir sonraki adımda yükleyebilirsiniz.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Input

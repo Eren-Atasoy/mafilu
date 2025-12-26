@@ -130,32 +130,47 @@ export default function EditMoviePage() {
         setError(null);
 
         try {
-            // Get upload URL from our API
-            const response = await fetch("/api/videos/upload", {
+            // 1. Create Video Entry & Link to Movie
+            const createResponse = await fetch("/api/videos/upload", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ title, movieId }),
             });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Upload failed");
+            if (!createResponse.ok) {
+                const data = await createResponse.json();
+                throw new Error(data.error || "Create failed");
             }
 
-            const { videoId, uploadUrl: _uploadUrl } = await response.json();
+            const { videoId } = await createResponse.json();
 
-            // Simulate upload progress (in production, use TUS protocol)
-            for (let i = 0; i <= 100; i += 10) {
-                setUploadProgress(i);
-                await new Promise(r => setTimeout(r, 200));
-            }
+            // 2. Upload Content via Proxy
+            await new Promise<void>((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                // Upload to our local proxy
+                xhr.open("PUT", `/api/videos/${videoId}/upload`, true);
 
-            // Update movie with video ID
-            await supabase
-                .from("movies")
-                .update({ bunny_video_id: videoId })
-                .eq("id", movieId);
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        setUploadProgress(Math.round(percentComplete));
+                    }
+                };
 
+                xhr.onload = () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        resolve();
+                    } else {
+                        reject(new Error("Upload failed"));
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error("Network error"));
+
+                xhr.send(videoFile);
+            });
+
+            // 3. Update UI state (DB link is already done in step 1)
             setSuccess("Video başarıyla yüklendi!");
             setVideoFile(null);
 

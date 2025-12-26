@@ -5,13 +5,11 @@ import {
     TrendingUp,
     TrendingDown,
     Eye,
-    Film,
     Calendar,
     CreditCard,
     ArrowUpRight,
     Clock,
-    CheckCircle,
-    XCircle
+    CheckCircle
 } from "lucide-react";
 
 // Mock earnings data - in production, this will come from Stripe/Iyzico + view analytics
@@ -39,15 +37,17 @@ const mockEarnings = {
 export default async function EarningsPage() {
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // const { data: { user } } = await supabase.auth.getUser();
 
     // In production, fetch real earnings data from transactions table
+    /*
     const { data: movies } = await supabase
         .from("movies")
         .select("id, title, total_views, total_earnings")
         .eq("producer_id", user?.id)
         .order("total_earnings", { ascending: false })
         .limit(5);
+    */
 
     const earnings = mockEarnings; // Replace with real data
 
