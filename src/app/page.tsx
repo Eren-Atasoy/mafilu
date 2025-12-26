@@ -1,539 +1,466 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Film,
   Play,
-  Upload,
-  Star,
-  TrendingUp,
-  Users,
-  ArrowRight,
-  Sparkles,
-  Eye
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Check,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { bunnyStream } from "@/lib/bunny";
+import { Button } from "@/components/ui/button";
 
-interface Movie {
-  id: string;
-  title: string;
-  genre: string;
-  total_views: number;
-  bunny_video_id?: string;
-}
+// Mock Data - Featured Movies for Hero
+const heroMovies = [
+  {
+    id: "hero-1",
+    title: "Kayıp Şehir",
+    description: "Antik bir haritanın peşinde düşen arkeolog, beklenmedik bir maceranın içine sürüklenir. Gizemli bir şehrin sırları, onu geçmişiyle yüzleşmeye zorlar.",
+    genre: "Macera",
+    year: 2024,
+    rating: "8.4",
+    duration: "2s 15dk",
+    backdrop: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+    tags: ["Aksiyon", "Gizem", "Macera"],
+  },
+  {
+    id: "hero-2",
+    title: "Son Gece",
+    description: "İstanbul'un karanlık sokaklarında geçen bu gerilim filmi, bir dedektifin son davasını konu alıyor. Her ipucu onu daha derin bir komploya sürükler.",
+    genre: "Gerilim",
+    year: 2024,
+    rating: "9.1",
+    duration: "1s 58dk",
+    backdrop: "linear-gradient(135deg, #2d132c 0%, #801336 50%, #c72c41 100%)",
+    tags: ["Gerilim", "Suç", "Drama"],
+  },
+  {
+    id: "hero-3",
+    title: "Mavi Rüya",
+    description: "Genç bir ressamın hayalleri ile gerçeklik arasındaki yolculuğu. Sanat, aşk ve kayıp üzerine derin bir meditasyon.",
+    genre: "Drama",
+    year: 2023,
+    rating: "8.7",
+    duration: "2s 05dk",
+    backdrop: "linear-gradient(135deg, #0c0c0c 0%, #1a0a2e 50%, #2d1b4e 100%)",
+    tags: ["Drama", "Romantik", "Sanat"],
+  },
+];
 
-// Spring animation config
-const springConfig = { stiffness: 100, damping: 20 };
+// Mock Data - Movie Categories
+const movieCategories = [
+  {
+    title: "Sizin İçin Seçtiklerimiz",
+    movies: [
+      { id: "m1", title: "Sessiz Çığlık", genre: "Korku", year: 2024, rating: "7.8" },
+      { id: "m2", title: "Aşkın Matematiği", genre: "Romantik", year: 2023, rating: "8.2" },
+      { id: "m3", title: "Kod Adı: Zaman", genre: "Bilim Kurgu", year: 2024, rating: "8.5" },
+      { id: "m4", title: "Dağların Ardında", genre: "Dram", year: 2023, rating: "9.0" },
+      { id: "m5", title: "Son Tren", genre: "Gerilim", year: 2024, rating: "7.9" },
+      { id: "m6", title: "Yıldız Tozu", genre: "Fantastik", year: 2024, rating: "8.1" },
+    ],
+  },
+  {
+    title: "Bu Hafta Popüler",
+    movies: [
+      { id: "m7", title: "Karanlık Sular", genre: "Aksiyon", year: 2024, rating: "8.3" },
+      { id: "m8", title: "Bir Başka Gün", genre: "Komedi", year: 2024, rating: "7.6" },
+      { id: "m9", title: "Labirent", genre: "Gizem", year: 2023, rating: "8.8" },
+      { id: "m10", title: "Sahne Işıkları", genre: "Müzikal", year: 2024, rating: "8.4" },
+      { id: "m11", title: "Gölgeler", genre: "Korku", year: 2024, rating: "7.5" },
+      { id: "m12", title: "Umut Yolu", genre: "Dram", year: 2023, rating: "9.2" },
+    ],
+  },
+  {
+    title: "Yeni Eklenenler",
+    movies: [
+      { id: "m13", title: "Fırtına Öncesi", genre: "Aksiyon", year: 2024, rating: "8.0" },
+      { id: "m14", title: "Kara Kutu", genre: "Gerilim", year: 2024, rating: "8.6" },
+      { id: "m15", title: "Ayna", genre: "Psikolojik", year: 2024, rating: "8.9" },
+      { id: "m16", title: "İlk Adım", genre: "Belgesel", year: 2024, rating: "9.1" },
+      { id: "m17", title: "Renkler", genre: "Deneysel", year: 2024, rating: "7.7" },
+      { id: "m18", title: "Sonsuzluk", genre: "Bilim Kurgu", year: 2024, rating: "8.2" },
+    ],
+  },
+  {
+    title: "Ödüllü Yapımlar",
+    movies: [
+      { id: "m19", title: "Bağımsız Ruhlar", genre: "Dram", year: 2023, rating: "9.4" },
+      { id: "m20", title: "Kış Masalı", genre: "Romantik", year: 2022, rating: "8.8" },
+      { id: "m21", title: "Denizin Sesi", genre: "Belgesel", year: 2023, rating: "9.0" },
+      { id: "m22", title: "Kadim Şehir", genre: "Tarih", year: 2023, rating: "8.7" },
+      { id: "m23", title: "Yalnız Kurt", genre: "Western", year: 2022, rating: "8.5" },
+      { id: "m24", title: "Son Vals", genre: "Müzikal", year: 2023, rating: "9.3" },
+    ],
+  },
+  {
+    title: "Türk Yapımları",
+    movies: [
+      { id: "m25", title: "Anadolu Hikayesi", genre: "Dram", year: 2024, rating: "8.9" },
+      { id: "m26", title: "İstanbul Gece", genre: "Suç", year: 2024, rating: "8.4" },
+      { id: "m27", title: "Boğaz'da Aşk", genre: "Romantik", year: 2024, rating: "7.8" },
+      { id: "m28", title: "Yeşil Vadi", genre: "Doğa", year: 2023, rating: "8.6" },
+      { id: "m29", title: "Cumhuriyet", genre: "Tarih", year: 2023, rating: "9.2" },
+      { id: "m30", title: "Sokak Kedisi", genre: "Animasyon", year: 2024, rating: "8.1" },
+    ],
+  },
+];
 
-// Cinematic fade variants
-const fadeInUp = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -20 }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
+// Generate placeholder colors for thumbnails
+const getPlaceholderColor = (id: string) => {
+  const colors = [
+    "from-purple-900 to-indigo-900",
+    "from-rose-900 to-pink-900",
+    "from-blue-900 to-cyan-900",
+    "from-emerald-900 to-teal-900",
+    "from-orange-900 to-amber-900",
+    "from-violet-900 to-purple-900",
+  ];
+  const index = parseInt(id.replace(/\D/g, "")) % colors.length;
+  return colors[index];
 };
 
 export default function HomePage() {
-  const [trendingMovies, setTrendingMovies] = useState<Movie[]>([]);
-  const [newMovies, setNewMovies] = useState<Movie[]>([]);
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [isMuted, setIsMuted] = useState(true);
+  const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
 
+  // Auto-rotate hero
   useEffect(() => {
-    // Fetch trending movies
-    const fetchMovies = async () => {
-      try {
-        const res = await fetch("/api/movies/featured");
-        if (res.ok) {
-          const data = await res.json();
-          setTrendingMovies(data.trending || []);
-          setNewMovies(data.new || []);
-        }
-      } catch (error) {
-        console.error("Failed to fetch movies:", error);
-      }
-    };
-    fetchMovies();
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroMovies.length);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
+  const currentHero = heroMovies[currentHeroIndex];
+
+  const toggleWatchlist = (movieId: string) => {
+    setWatchlist((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(movieId)) {
+        newSet.delete(movieId);
+      } else {
+        newSet.add(movieId);
+      }
+      return newSet;
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-obsidian relative overflow-hidden">
-      {/* Pulsar Background Glows */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%)"
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.5, 0.8, 0.5]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(168, 85, 247, 0.12) 0%, transparent 70%)"
-          }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.6, 0.4, 0.6]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        <motion.div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 60%)"
-          }}
-          animate={{
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-[#0A0510]">
       {/* Hero Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 pt-28 pb-24">
+      <section className="relative h-[85vh] min-h-[600px] overflow-hidden">
+        {/* Background */}
         <motion.div
-          className="grid lg:grid-cols-2 gap-16 items-center"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
+          key={currentHero.id}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          style={{ background: currentHero.backdrop }}
         >
-          {/* Left Content */}
-          <div className="lg:pl-8 space-y-10">
-            <motion.div
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full glass gradient-border"
-              variants={fadeInUp}
-              transition={{ type: "spring", ...springConfig }}
-            >
-              <Sparkles className="w-4 h-4 text-[#A855F7]" />
-              <span className="text-sm text-[#A855F7] font-medium">Bağımsız sinema için yeni ev</span>
-            </motion.div>
+          {/* Overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0A0510] via-[#0A0510]/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0510] via-transparent to-transparent" />
+        </motion.div>
 
-            <motion.h1
-              className="text-5xl lg:text-7xl font-bold leading-[1.1] headline-serif"
-              variants={fadeInUp}
-              transition={{ type: "spring", ...springConfig, delay: 0.1 }}
-            >
-              <span className="text-[#F5F3FF]">Bağımsız Sinemanın</span>
-              <br />
-              <span className="text-gradient">Yeni Sahnesi</span>
-            </motion.h1>
-
-            <motion.p
-              className="text-xl text-[#A197B0] max-w-lg leading-relaxed"
-              variants={fadeInUp}
-              transition={{ type: "spring", ...springConfig, delay: 0.2 }}
-            >
-              Mafilu, bağımsız sinemacılar için tasarlanmış küratörlü bir streaming platformudur.
-              Filmlerinizi dünyayla paylaşın, izleyicilerle buluşun.
-            </motion.p>
-
-            <motion.div
-              className="flex flex-wrap gap-5"
-              variants={fadeInUp}
-              transition={{ type: "spring", ...springConfig, delay: 0.3 }}
-            >
-              <Link href="/browse">
-                <motion.button
-                  className="btn-primary-ghost flex items-center gap-3"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", ...springConfig }}
-                >
-                  <span className="flex items-center gap-3">
-                    <Play className="w-5 h-5" />
-                    İzlemeye Başla
-                  </span>
-                </motion.button>
-              </Link>
-              <Link href="/signup?role=producer">
-                <motion.button
-                  className="btn-ghost flex items-center gap-3"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ type: "spring", ...springConfig }}
-                >
-                  <Upload className="w-5 h-5" />
-                  Film Yükle
-                </motion.button>
-              </Link>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              className="flex gap-12 pt-6"
-              variants={fadeInUp}
-              transition={{ type: "spring", ...springConfig, delay: 0.4 }}
-            >
-              {[
-                { value: "500+", label: "Bağımsız Film" },
-                { value: "10K+", label: "Aktif İzleyici" },
-                { value: "50+", label: "Ülke" }
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-4xl font-bold text-[#F5F3FF] headline-serif">{stat.value}</p>
-                  <p className="text-sm text-[#6B5F7C] mt-1">{stat.label}</p>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right Content - Hero Visual */}
+        {/* Content */}
+        <div className="relative z-10 h-full max-w-7xl mx-auto px-6 flex flex-col justify-center pt-16">
           <motion.div
-            className="relative lg:-mr-20"
-            variants={fadeInUp}
-            transition={{ type: "spring", ...springConfig, delay: 0.2 }}
+            key={currentHero.id + "-content"}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-2xl"
           >
-            {/* Main Hero Card with Ken Burns */}
-            <motion.div
-              className="relative aspect-[16/10] rounded-3xl overflow-hidden glass-card"
-              whileHover={{ scale: 1.02 }}
-              transition={{ type: "spring", ...springConfig }}
-            >
-              <div className="absolute inset-0 ken-burns">
-                <div
-                  className="w-full h-full"
-                  style={{
-                    background: "linear-gradient(135deg, #2B0F3F 0%, #1A0B2E 50%, #150A24 100%)"
-                  }}
-                />
-              </div>
+            {/* Tags */}
+            <div className="flex items-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-[#7C3AED] rounded text-xs font-semibold text-white">
+                ÖNE ÇIKAN
+              </span>
+              <span className="text-[#A197B0] text-sm">{currentHero.genre}</span>
+              <span className="text-[#6B5F7C]">•</span>
+              <span className="text-[#A197B0] text-sm">{currentHero.year}</span>
+              <span className="text-[#6B5F7C]">•</span>
+              <span className="text-[#A197B0] text-sm">{currentHero.duration}</span>
+            </div>
 
-              {/* Play Button */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Link href="/browse">
-                  <motion.div
-                    className="w-24 h-24 rounded-full glass flex items-center justify-center cursor-pointer group"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", ...springConfig }}
-                  >
-                    <motion.div
-                      className="absolute inset-0 rounded-full"
-                      style={{
-                        background: "radial-gradient(circle, rgba(124, 58, 237, 0.3) 0%, transparent 70%)"
-                      }}
-                      animate={{
-                        scale: [1, 1.5, 1],
-                        opacity: [0.5, 0, 0.5]
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
-                    <Play className="w-10 h-10 text-white ml-1 relative z-10" />
-                  </motion.div>
-                </Link>
-              </div>
+            {/* Title */}
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 headline-serif">
+              {currentHero.title}
+            </h1>
 
-              {/* Film Strip */}
-              <div className="absolute bottom-6 left-6 right-6 flex gap-3">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="flex-1 h-14 rounded-xl bg-[#1A0B2E]/60 backdrop-blur-sm border border-[#7C3AED]/10"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 + i * 0.1 }}
-                  />
+            {/* Rating & Tags */}
+            <div className="flex items-center gap-4 mb-4">
+              <span className="flex items-center gap-1 text-green-400 font-semibold">
+                ★ {currentHero.rating}
+              </span>
+              <div className="flex gap-2">
+                {currentHero.tags.map((tag) => (
+                  <span key={tag} className="text-xs text-[#A197B0] border border-[#6B5F7C]/30 rounded px-2 py-0.5">
+                    {tag}
+                  </span>
                 ))}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Floating Card - Rating */}
-            <motion.div
-              className="absolute -left-8 top-1/4 p-5 rounded-2xl glass-card"
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8, type: "spring", ...springConfig }}
-              whileHover={{ y: -5 }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white headline-serif">4.9</p>
-                  <p className="text-xs text-[#6B5F7C]">Kullanıcı Puanı</p>
-                </div>
-              </div>
-            </motion.div>
+            {/* Description */}
+            <p className="text-lg text-[#A197B0] mb-8 leading-relaxed">
+              {currentHero.description}
+            </p>
 
-            {/* Floating Card - Trending */}
-            <motion.div
-              className="absolute -right-4 bottom-1/4 p-5 rounded-2xl glass-card"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1, type: "spring", ...springConfig }}
-              whileHover={{ y: -5 }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white headline-serif">+127%</p>
-                  <p className="text-xs text-[#6B5F7C]">Bu Ay İzlenme</p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Trending Movies Section */}
-      {trendingMovies.length > 0 && (
-        <section className="relative z-10 py-16 border-t border-[#7C3AED]/10">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-[#F5F3FF] headline-serif flex items-center gap-3">
-                  <TrendingUp className="w-6 h-6 text-[#A855F7]" />
-                  Trend Filmler
-                </h2>
-                <p className="text-[#6B5F7C] mt-1">Bu hafta en çok izlenen yapımlar</p>
-              </div>
-              <Link href="/browse" className="text-[#A855F7] hover:text-[#C4B5FD] text-sm flex items-center gap-1">
-                Tümünü Gör <ArrowRight className="w-4 h-4" />
+            {/* Buttons */}
+            <div className="flex items-center gap-4">
+              <Link href={`/watch/${currentHero.id}`}>
+                <Button size="lg" className="bg-white text-black hover:bg-white/90 font-semibold px-8">
+                  <Play className="w-5 h-5 mr-2 fill-current" />
+                  Oynat
+                </Button>
               </Link>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {trendingMovies.slice(0, 4).map((movie, i) => (
-                <MovieCard key={movie.id} movie={movie} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* New Releases Section */}
-      {newMovies.length > 0 && (
-        <section className="relative z-10 py-16">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-[#F5F3FF] headline-serif flex items-center gap-3">
-                  <Sparkles className="w-6 h-6 text-[#A855F7]" />
-                  Yeni Eklenenler
-                </h2>
-                <p className="text-[#6B5F7C] mt-1">Platformdaki en son yapımlar</p>
-              </div>
-              <Link href="/browse" className="text-[#A855F7] hover:text-[#C4B5FD] text-sm flex items-center gap-1">
-                Tümünü Gör <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {newMovies.slice(0, 4).map((movie, i) => (
-                <MovieCard key={movie.id} movie={movie} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Features Section */}
-      <section className="relative z-10 py-32 border-t border-[#7C3AED]/10">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            className="text-center mb-20"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ type: "spring", ...springConfig }}
-          >
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#F5F3FF] mb-6 headline-serif">
-              Neden <span className="text-gradient">Mafilu</span>?
-            </h2>
-            <p className="text-xl text-[#A197B0] max-w-2xl mx-auto">
-              Bağımsız sinemacılar için tasarlanmış, profesyonel bir platform
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Film,
-                title: "Küratörlü İçerik",
-                description: "Her film uzman ekibimiz tarafından incelenir. Kalite ve özgünlük bizim için öncelik.",
-                gradient: "from-[#7C3AED] to-[#A855F7]",
-              },
-              {
-                icon: TrendingUp,
-                title: "Adil Gelir Paylaşımı",
-                description: "Yapımcılara %70 gelir payı. Şeffaf raporlama ve aylık ödemeler.",
-                gradient: "from-emerald-500 to-teal-500",
-              },
-              {
-                icon: Users,
-                title: "Global Erişim",
-                description: "190+ ülkede izleyicilere ulaşın. CDN altyapısıyla kesintisiz yayın.",
-                gradient: "from-orange-500 to-rose-500",
-              },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                className="glass-card p-8 group cursor-pointer"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, type: "spring", ...springConfig }}
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10"
               >
-                <motion.div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-8`}
-                  whileHover={{ rotate: 5, scale: 1.1 }}
-                  transition={{ type: "spring", ...springConfig }}
-                >
-                  <feature.icon className="w-8 h-8 text-white" />
-                </motion.div>
-                <h3 className="text-xl font-semibold text-[#F5F3FF] mb-4 headline-serif">{feature.title}</h3>
-                <p className="text-[#A197B0] leading-relaxed">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
+                <Info className="w-5 h-5 mr-2" />
+                Daha Fazla Bilgi
+              </Button>
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+              >
+                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Hero Indicators */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+          {heroMovies.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentHeroIndex(index)}
+              className={`h-1 rounded-full transition-all duration-300 ${index === currentHeroIndex
+                  ? "w-8 bg-white"
+                  : "w-4 bg-white/30 hover:bg-white/50"
+                }`}
+            />
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="relative z-10 py-32">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <motion.div
-            className="glass-card p-16 pulsar-glow"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ type: "spring", ...springConfig }}
-          >
-            <h2 className="text-4xl lg:text-5xl font-bold text-[#F5F3FF] mb-6 headline-serif">
-              Hikayenizi Anlatmaya <span className="text-gradient">Hazır mısınız?</span>
-            </h2>
-            <p className="text-xl text-[#A197B0] mb-10 max-w-xl mx-auto">
-              Bugün Mafilu&apos;ya katılın ve filminizi dünya ile paylaşın.
-              İlk filminizi yüklemek tamamen ücretsiz.
-            </p>
-            <Link href="/signup">
-              <motion.button
-                className="btn-primary-ghost text-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", ...springConfig }}
-              >
-                <span className="flex items-center gap-3">
-                  Hemen Başla
-                  <ArrowRight className="w-5 h-5" />
-                </span>
-              </motion.button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-[#7C3AED]/10 py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <Film className="w-7 h-7 text-[#7C3AED]" />
-              <span className="font-semibold text-[#F5F3FF] headline-serif text-lg">Mafilu</span>
-            </div>
-            <p className="text-sm text-[#6B5F7C]">
-              © 2024 Mafilu. Bağımsız sinemacılar için yapıldı.
-            </p>
-            <div className="flex gap-8">
-              {["Gizlilik", "Şartlar", "İletişim"].map((item) => (
-                <Link
-                  key={item}
-                  href={`/${item.toLowerCase()}`}
-                  className="text-sm text-[#6B5F7C] hover:text-[#A855F7] transition-colors duration-500"
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Movie Categories */}
+      <main className="relative z-10 -mt-32 pb-20">
+        {movieCategories.map((category, categoryIndex) => (
+          <MovieRow
+            key={category.title}
+            title={category.title}
+            movies={category.movies}
+            delay={categoryIndex * 0.1}
+            watchlist={watchlist}
+            onToggleWatchlist={toggleWatchlist}
+          />
+        ))}
+      </main>
     </div>
   );
 }
 
+// Movie Row Component with horizontal scroll
+interface Movie {
+  id: string;
+  title: string;
+  genre: string;
+  year: number;
+  rating: string;
+}
+
+interface MovieRowProps {
+  title: string;
+  movies: Movie[];
+  delay?: number;
+  watchlist: Set<string>;
+  onToggleWatchlist: (id: string) => void;
+}
+
+function MovieRow({ title, movies, delay = 0, watchlist, onToggleWatchlist }: MovieRowProps) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (rowRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = rowRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const row = rowRef.current;
+    if (row) {
+      row.addEventListener("scroll", checkScroll);
+      return () => row.removeEventListener("scroll", checkScroll);
+    }
+  }, []);
+
+  const scroll = (direction: "left" | "right") => {
+    if (rowRef.current) {
+      const scrollAmount = rowRef.current.clientWidth * 0.8;
+      rowRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  return (
+    <motion.section
+      className="mb-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5 }}
+    >
+      <div className="max-w-[1800px] mx-auto px-6">
+        <h2 className="text-xl font-semibold text-[#F5F3FF] mb-4">{title}</h2>
+      </div>
+
+      <div className="relative group">
+        {/* Left Arrow */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-r from-[#0A0510] to-transparent flex items-center justify-start pl-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronLeft className="w-8 h-8 text-white" />
+          </button>
+        )}
+
+        {/* Right Arrow */}
+        {canScrollRight && (
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-0 top-0 bottom-0 z-10 w-12 bg-gradient-to-l from-[#0A0510] to-transparent flex items-center justify-end pr-2 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <ChevronRight className="w-8 h-8 text-white" />
+          </button>
+        )}
+
+        {/* Movies Container */}
+        <div
+          ref={rowRef}
+          className="flex gap-2 overflow-x-auto scrollbar-hide px-6 scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {movies.map((movie) => (
+            <MovieCard
+              key={movie.id}
+              movie={movie}
+              isInWatchlist={watchlist.has(movie.id)}
+              onToggleWatchlist={() => onToggleWatchlist(movie.id)}
+            />
+          ))}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
+
 // Movie Card Component
-function MovieCard({ movie, index }: { movie: Movie; index: number }) {
-  const thumbnailUrl = movie.bunny_video_id
-    ? bunnyStream.getThumbnailUrl(movie.bunny_video_id)
-    : null;
+interface MovieCardProps {
+  movie: Movie;
+  isInWatchlist: boolean;
+  onToggleWatchlist: () => void;
+}
+
+function MovieCard({ movie, isInWatchlist, onToggleWatchlist }: MovieCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      className="relative flex-shrink-0 w-[200px] md:w-[240px] cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.05, zIndex: 10 }}
+      transition={{ duration: 0.2 }}
     >
-      <Link href={`/watch/${movie.id}`} className="group">
-        <Card className="bg-[#150A24] border border-[#7C3AED]/10 overflow-hidden hover:border-[#7C3AED]/30 transition-all duration-300 group-hover:-translate-y-1">
-          <div className="aspect-[16/9] relative bg-slate-900">
-            {thumbnailUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={thumbnailUrl}
-                alt={movie.title}
-                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                <Play className="w-8 h-8 text-slate-600" />
-              </div>
-            )}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/40">
-              <div className="w-10 h-10 rounded-full bg-[#7C3AED]/90 flex items-center justify-center backdrop-blur-sm">
-                <Play className="w-4 h-4 text-white ml-0.5" />
-              </div>
-            </div>
-            <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="bg-black/50 backdrop-blur-md text-white border-white/10 uppercase text-[10px] tracking-wider">
-                {movie.genre?.replace("_", " ")}
-              </Badge>
-            </div>
+      <Link href={`/watch/${movie.id}`}>
+        {/* Thumbnail */}
+        <div className={`aspect-[16/9] rounded-md overflow-hidden bg-gradient-to-br ${getPlaceholderColor(movie.id)}`}>
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl font-bold text-white/20">{movie.title[0]}</span>
           </div>
-          <CardContent className="p-3">
-            <h3 className="font-medium text-sm text-[#F5F3FF] truncate">{movie.title}</h3>
-            {movie.total_views > 0 && (
-              <p className="text-xs text-[#6B5F7C] mt-1 flex items-center gap-1">
-                <Eye className="w-3 h-3" />
-                {movie.total_views.toLocaleString()}
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        </div>
       </Link>
+
+      {/* Hover Card */}
+      {isHovered && (
+        <motion.div
+          className="absolute top-0 left-0 right-0 bg-[#181818] rounded-md shadow-2xl overflow-hidden z-20"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Thumbnail */}
+          <Link href={`/watch/${movie.id}`}>
+            <div className={`aspect-[16/9] bg-gradient-to-br ${getPlaceholderColor(movie.id)} relative`}>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center">
+                  <Play className="w-6 h-6 text-black fill-current ml-1" />
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Info */}
+          <div className="p-3">
+            {/* Actions */}
+            <div className="flex items-center gap-2 mb-2">
+              <Link href={`/watch/${movie.id}`}>
+                <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-white/90">
+                  <Play className="w-4 h-4 text-black fill-current ml-0.5" />
+                </button>
+              </Link>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onToggleWatchlist();
+                }}
+                className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-colors ${isInWatchlist
+                    ? "border-white bg-white/20"
+                    : "border-white/50 hover:border-white"
+                  }`}
+              >
+                {isInWatchlist ? (
+                  <Check className="w-4 h-4 text-white" />
+                ) : (
+                  <Plus className="w-4 h-4 text-white" />
+                )}
+              </button>
+            </div>
+
+            {/* Meta */}
+            <div className="flex items-center gap-2 text-xs mb-1">
+              <span className="text-green-400 font-semibold">★ {movie.rating}</span>
+              <span className="text-[#A197B0]">{movie.year}</span>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-sm font-medium text-white truncate">{movie.title}</h3>
+
+            {/* Genre */}
+            <p className="text-xs text-[#6B5F7C]">{movie.genre}</p>
+          </div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }
