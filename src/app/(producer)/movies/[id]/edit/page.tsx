@@ -1,0 +1,501 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+    ArrowLeft,
+    Save,
+    Upload,
+    FileVideo,
+    X,
+    Check,
+    AlertCircle,
+    Loader2,
+    CheckCircle
+} from "lucide-react";
+
+const genres = [
+    { value: "drama", label: "Drama" },
+    { value: "comedy", label: "Komedi" },
+    { value: "thriller", label: "Gerilim" },
+    { value: "documentary", label: "Belgesel" },
+    { value: "horror", label: "Korku" },
+    { value: "sci_fi", label: "Bilim Kurgu" },
+    { value: "romance", label: "Romantik" },
+    { value: "animation", label: "Animasyon" },
+    { value: "experimental", label: "Deneysel" },
+    { value: "short_film", label: "Kısa Film" },
+];
+
+interface Movie {
+    id: string;
+    title: string;
+    description: string | null;
+    genre: string;
+    release_year: number | null;
+    tags: string[] | null;
+    status: string;
+    bunny_video_id: string | null;
+}
+
+export default function EditMoviePage() {
+    const router = useRouter();
+    const params = useParams();
+    const movieId = params.id as string;
+    const supabase = createClient();
+
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
+    const [movie, setMovie] = useState<Movie | null>(null);
+
+    // Form state
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [genre, setGenre] = useState("");
+    const [releaseYear, setReleaseYear] = useState("");
+    const [tags, setTags] = useState("");
+
+    // Video state
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Fetch movie data
+    useEffect(() => {
+        async function fetchMovie() {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    router.push("/login");
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from("movies")
+                    .select("*")
+                    .eq("id", movieId)
+                    .eq("producer_id", user.id)
+                    .single();
+
+                if (error || !data) {
+                    router.push("/movies");
+                    return;
+                }
+
+                setMovie(data);
+                setTitle(data.title || "");
+                setDescription(data.description || "");
+                setGenre(data.genre || "");
+                setReleaseYear(data.release_year?.toString() || "");
+                setTags(data.tags?.join(", ") || "");
+            } catch (err) {
+                console.error(err);
+                setError("Film yüklenirken bir hata oluştu");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchMovie();
+    }, [movieId, router, supabase]);
+
+    const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (!file.type.startsWith("video/")) {
+                setError("Lütfen geçerli bir video dosyası seçin");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024 * 1024) {
+                setError("Video dosyası 5GB'dan küçük olmalıdır");
+                return;
+            }
+            setVideoFile(file);
+            setError(null);
+        }
+    };
+
+    const handleUploadVideo = async () => {
+        if (!videoFile || !movieId) return;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+        setError(null);
+
+        try {
+            // Get upload URL from our API
+            const response = await fetch("/api/videos/upload", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, movieId }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || "Upload failed");
+            }
+
+            const { videoId, uploadUrl: _uploadUrl } = await response.json();
+
+            // Simulate upload progress (in production, use TUS protocol)
+            for (let i = 0; i <= 100; i += 10) {
+                setUploadProgress(i);
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            // Update movie with video ID
+            await supabase
+                .from("movies")
+                .update({ bunny_video_id: videoId })
+                .eq("id", movieId);
+
+            setSuccess("Video başarıyla yüklendi!");
+            setVideoFile(null);
+
+            // Refresh movie data
+            const { data } = await supabase
+                .from("movies")
+                .select("*")
+                .eq("id", movieId)
+                .single();
+            if (data) setMovie(data);
+        } catch (err: unknown) {
+            console.error(err);
+            setError(err instanceof Error ? err.message : "Video yüklenirken bir hata oluştu");
+        } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+        }
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const { error: updateError } = await supabase
+                .from("movies")
+                .update({
+                    title,
+                    description,
+                    genre,
+                    release_year: releaseYear ? parseInt(releaseYear) : null,
+                    tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+                    updated_at: new Date().toISOString(),
+                })
+                .eq("id", movieId);
+
+            if (updateError) throw updateError;
+
+            setSuccess("Değişiklikler kaydedildi!");
+        } catch (err) {
+            console.error(err);
+            setError("Kaydetme sırasında bir hata oluştu");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleSubmitForReview = async () => {
+        setIsSaving(true);
+        setError(null);
+
+        try {
+            const { error: updateError } = await supabase
+                .from("movies")
+                .update({
+                    title,
+                    description,
+                    genre,
+                    release_year: releaseYear ? parseInt(releaseYear) : null,
+                    tags: tags.split(",").map(t => t.trim()).filter(Boolean),
+                    status: "pending_review",
+                    submitted_at: new Date().toISOString(),
+                })
+                .eq("id", movieId);
+
+            if (updateError) throw updateError;
+
+            router.push("/movies");
+        } catch (err) {
+            console.error(err);
+            setError("Gönderme sırasında bir hata oluştu");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-[#A855F7] animate-spin" />
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <Link
+                    href={`/movies/${movieId}`}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[#A197B0] hover:text-white transition-colors"
+                    style={{ background: "rgba(124, 58, 237, 0.1)" }}
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold text-[#F5F3FF] headline-serif">Filmi Düzenle</h1>
+                    <p className="text-[#A197B0]">{movie?.title}</p>
+                </div>
+            </div>
+
+            {/* Messages */}
+            {success && (
+                <div className="flex items-center gap-3 p-4 rounded-xl" style={{
+                    background: "rgba(34, 197, 94, 0.1)",
+                    border: "1px solid rgba(34, 197, 94, 0.2)"
+                }}>
+                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                    <p className="text-emerald-400">{success}</p>
+                </div>
+            )}
+
+            {error && (
+                <div className="flex items-center gap-3 p-4 rounded-xl" style={{
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1px solid rgba(239, 68, 68, 0.2)"
+                }}>
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                    <p className="text-red-400">{error}</p>
+                </div>
+            )}
+
+            <div className="grid lg:grid-cols-3 gap-6">
+                {/* Main Content */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Video Upload */}
+                    <Card variant="glass">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Video Dosyası</CardTitle>
+                            <CardDescription>
+                                {movie?.bunny_video_id
+                                    ? "Video yüklendi. Değiştirmek için yeni bir dosya seçin."
+                                    : "MP4, MOV veya AVI formatında video yükleyin (maks. 5GB)"
+                                }
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {movie?.bunny_video_id && !videoFile && (
+                                <div className="p-4 rounded-xl mb-4" style={{
+                                    background: "rgba(34, 197, 94, 0.1)",
+                                    border: "1px solid rgba(34, 197, 94, 0.2)"
+                                }}>
+                                    <div className="flex items-center gap-3">
+                                        <Check className="w-5 h-5 text-emerald-400" />
+                                        <span className="text-emerald-400">Video yüklendi ve işleniyor</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {!videoFile ? (
+                                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer hover:border-[#A855F7] transition-colors" style={{
+                                    borderColor: "rgba(124, 58, 237, 0.3)",
+                                    background: "rgba(21, 10, 36, 0.4)"
+                                }}>
+                                    <div className="flex flex-col items-center justify-center py-4">
+                                        <Upload className="w-10 h-10 text-[#6B5F7C] mb-3" />
+                                        <p className="mb-2 text-sm text-[#A197B0]">
+                                            <span className="font-semibold text-[#A855F7]">Tıklayarak seçin</span> veya sürükleyip bırakın
+                                        </p>
+                                        <p className="text-xs text-[#6B5F7C]">MP4, MOV, AVI (maks. 5GB)</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="video/*"
+                                        onChange={handleVideoSelect}
+                                    />
+                                </label>
+                            ) : (
+                                <div className="p-4 rounded-xl" style={{ background: "rgba(21, 10, 36, 0.4)" }}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+                                            background: "rgba(124, 58, 237, 0.1)"
+                                        }}>
+                                            <FileVideo className="w-6 h-6 text-[#A855F7]" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium text-[#F5F3FF] truncate">{videoFile.name}</p>
+                                            <p className="text-sm text-[#6B5F7C]">
+                                                {(videoFile.size / (1024 * 1024)).toFixed(1)} MB
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setVideoFile(null)}
+                                            className="p-2 text-[#6B5F7C] hover:text-red-400 transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    {isUploading && (
+                                        <div className="mt-4">
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-[#A197B0]">Yükleniyor...</span>
+                                                <span className="text-[#A855F7]">{uploadProgress}%</span>
+                                            </div>
+                                            <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(124, 58, 237, 0.2)" }}>
+                                                <div
+                                                    className="h-full transition-all duration-300"
+                                                    style={{
+                                                        width: `${uploadProgress}%`,
+                                                        background: "linear-gradient(90deg, #7C3AED 0%, #A855F7 100%)"
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                    {!isUploading && (
+                                        <Button
+                                            className="mt-4 w-full"
+                                            onClick={handleUploadVideo}
+                                        >
+                                            <Upload className="w-4 h-4" />
+                                            Video Yükle
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    {/* Movie Details */}
+                    <Card variant="glass">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Film Bilgileri</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Input
+                                label="Film Adı"
+                                placeholder="Örn: Kayıp Şehir"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                required
+                            />
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-[#C4B5FD]">Açıklama</label>
+                                <textarea
+                                    className="flex w-full rounded-xl px-4 py-3 text-sm text-[#F5F3FF] placeholder:text-[#6B5F7C] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/50 transition-all duration-200 min-h-[120px] resize-none"
+                                    style={{
+                                        background: "rgba(21, 10, 36, 0.6)",
+                                        border: "1px solid rgba(124, 58, 237, 0.2)",
+                                    }}
+                                    placeholder="Filminizin konusu ve hikayesi hakkında kısa bir açıklama yazın..."
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-[#C4B5FD]">Kategori</label>
+                                    <select
+                                        className="flex h-11 w-full rounded-xl px-4 py-2 text-sm text-[#F5F3FF] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/50 transition-all duration-200 appearance-none cursor-pointer"
+                                        style={{
+                                            background: "rgba(21, 10, 36, 0.6)",
+                                            border: "1px solid rgba(124, 58, 237, 0.2)",
+                                        }}
+                                        value={genre}
+                                        onChange={(e) => setGenre(e.target.value)}
+                                        required
+                                    >
+                                        <option value="" className="bg-[#1A0B2E]">Kategori seçin</option>
+                                        {genres.map((g) => (
+                                            <option key={g.value} value={g.value} className="bg-[#1A0B2E]">
+                                                {g.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <Input
+                                    label="Yapım Yılı"
+                                    type="number"
+                                    value={releaseYear}
+                                    onChange={(e) => setReleaseYear(e.target.value)}
+                                />
+                            </div>
+
+                            <Input
+                                label="Etiketler"
+                                placeholder="bağımsız, ödüllü, gerilim (virgülle ayırın)"
+                                value={tags}
+                                onChange={(e) => setTags(e.target.value)}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Sidebar */}
+                <div className="space-y-6">
+                    <Card variant="glass">
+                        <CardHeader>
+                            <CardTitle className="text-lg">İşlemler</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={handleSave}
+                                isLoading={isSaving}
+                            >
+                                <Save className="w-4 h-4" />
+                                Kaydet
+                            </Button>
+
+                            {movie?.status === "draft" && (
+                                <Button
+                                    className="w-full"
+                                    onClick={handleSubmitForReview}
+                                    isLoading={isSaving}
+                                >
+                                    <Check className="w-4 h-4" />
+                                    İncelemeye Gönder
+                                </Button>
+                            )}
+
+                            <p className="text-xs text-[#6B5F7C] text-center">
+                                İncelemeye gönderilen filmler ekibimiz tarafından değerlendirilir
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Status Info */}
+                    <Card variant="glass">
+                        <CardContent className="p-6">
+                            <div className="text-center">
+                                <p className="text-sm text-[#A197B0]">Mevcut Durum</p>
+                                <p className="text-lg font-semibold text-[#F5F3FF] mt-1 capitalize">
+                                    {movie?.status === "draft" && "Taslak"}
+                                    {movie?.status === "pending_review" && "İnceleniyor"}
+                                    {movie?.status === "approved" && "Yayında"}
+                                    {movie?.status === "rejected" && "Reddedildi"}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    );
+}
