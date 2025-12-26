@@ -2,20 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Sparkles, CheckCircle } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const supabase = createClient();
+
+    const isConfirmed = searchParams.get("confirmed") === "true";
+    const authError = searchParams.get("error");
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(authError ? "Kimlik doğrulama hatası oluştu." : null);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -95,6 +99,22 @@ export default function LoginPage() {
                     </div>
 
                     <form onSubmit={handleLogin} className="space-y-5">
+                        {/* Success Message - Email Confirmed */}
+                        {isConfirmed && (
+                            <motion.div
+                                className="p-4 rounded-xl text-sm flex items-center gap-3"
+                                style={{
+                                    background: "rgba(34, 197, 94, 0.1)",
+                                    border: "1px solid rgba(34, 197, 94, 0.2)",
+                                }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                            >
+                                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                <p className="text-green-400">E-posta adresiniz onaylandı! Şimdi giriş yapabilirsiniz.</p>
+                            </motion.div>
+                        )}
+
                         {/* Error Message */}
                         {error && (
                             <motion.div
