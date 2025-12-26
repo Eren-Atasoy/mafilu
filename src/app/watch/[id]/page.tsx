@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { bunnyStream } from "@/lib/bunny";
 import { ViewCounter } from "@/components/video/view-counter";
+import { RelatedMovies } from "@/components/video/related-movies";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Calendar, Share2, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,26 @@ export default async function WatchPage({ params }: PageProps) {
     if (error || !movie) {
         notFound();
     }
+
+    // Fetch related movies (same genre, excluding current)
+    const { data: relatedMoviesData } = await supabase
+        .from("movies")
+        .select("id, title, genre, total_views, bunny_video_id")
+        .eq("status", "approved")
+        .eq("genre", movie.genre)
+        .neq("id", id)
+        .order("total_views", { ascending: false })
+        .limit(5);
+
+    const relatedMovies = (relatedMoviesData || []).map((m) => ({
+        id: m.id,
+        title: m.title,
+        genre: m.genre,
+        total_views: m.total_views || 0,
+        thumbnailUrl: m.bunny_video_id
+            ? bunnyStream.getThumbnailUrl(m.bunny_video_id)
+            : undefined,
+    }));
 
     const embedUrl = movie.bunny_video_id
         ? bunnyStream.getEmbedUrl(movie.bunny_video_id, true) // Autoplay true
@@ -134,22 +155,10 @@ export default async function WatchPage({ params }: PageProps) {
                             </Button>
                         </div>
 
-                        {/* More Like This (Static Placeholder for now) */}
+                        {/* More Like This */}
                         <div>
                             <h3 className="font-semibold text-lg mb-4 pl-1">Benzer Filmler</h3>
-                            <div className="space-y-3">
-                                {[1, 2, 3].map((i) => (
-                                    <div key={i} className="flex gap-3 p-2 rounded-xl hover:bg-[#150A24] transition-colors cursor-pointer group">
-                                        <div className="w-32 aspect-video bg-slate-800 rounded-lg overflow-hidden relative">
-                                            <div className="absolute inset-0 bg-[#7C3AED]/20 group-hover:bg-transparent transition-colors" />
-                                        </div>
-                                        <div className="flex-1 py-1">
-                                            <div className="h-4 w-3/4 bg-[#1A0B2E] rounded mb-2" />
-                                            <div className="h-3 w-1/2 bg-[#1A0B2E] rounded opacity-60" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                            <RelatedMovies movies={relatedMovies} />
                         </div>
                     </div>
                 </div>
