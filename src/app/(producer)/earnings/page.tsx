@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+// import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     DollarSign,
@@ -35,7 +35,7 @@ const mockEarnings = {
 };
 
 export default async function EarningsPage() {
-    const supabase = await createClient();
+    // const supabase = await createClient();
 
     // const { data: { user } } = await supabase.auth.getUser();
 
