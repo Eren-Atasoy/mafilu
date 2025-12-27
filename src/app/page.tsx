@@ -297,8 +297,8 @@ export default function HomePage() {
             >
               <div
                 className={`h-[3px] rounded-full transition-all duration-500 ${index === currentHeroIndex
-                    ? "w-16 bg-[var(--mf-primary)]"
-                    : "w-8 bg-white/30 group-hover:bg-white/50"
+                  ? "w-16 bg-[var(--mf-primary)]"
+                  : "w-8 bg-white/30 group-hover:bg-white/50"
                   }`}
               />
               {index === currentHeroIndex && (
@@ -353,26 +353,65 @@ export default function HomePage() {
           ================================================ */}
       <footer className="border-t border-[var(--border-subtle)] py-16 bg-[var(--mf-black)]">
         <div className="max-w-[1600px] mx-auto px-6 md:px-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="flex items-center gap-4">
+          {/* Top Row */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+            {/* Brand */}
+            <div className="md:col-span-1">
               <span className="headline-serif text-3xl font-light text-[var(--mf-text-high)] tracking-tight">
                 mafilu
               </span>
-              <span className="text-[var(--mf-text-low)]">|</span>
-              <span className="text-[var(--mf-text-medium)] text-sm tracking-wide">Bağımsız Sinema Platformu</span>
+              <p className="text-[var(--mf-text-medium)] text-sm mt-3 max-w-xs">
+                Bağımsız sinema dünyasına açılan kapınız. Yapımcılar için fırsat, izleyiciler için keşif.
+              </p>
             </div>
-            <div className="flex items-center gap-8 text-sm">
-              <Link href="/privacy" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">
-                Gizlilik
-              </Link>
-              <Link href="/terms" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">
-                Kullanım Koşulları
-              </Link>
-              <Link href="/contact" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">
-                İletişim
-              </Link>
+
+            {/* İzleyiciler */}
+            <div>
+              <h4 className="text-[var(--mf-text-high)] font-medium text-sm mb-4 tracking-wide uppercase">İzleyiciler</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/browse" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Filmleri Keşfet</Link></li>
+                <li><Link href="/subscription" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Premium Üyelik</Link></li>
+                <li><Link href="/watchlist" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">İzleme Listem</Link></li>
+              </ul>
             </div>
-            <p className="text-[var(--mf-text-low)] text-sm">© 2024 Mafilu</p>
+
+            {/* Yapımcılar */}
+            <div>
+              <h4 className="text-[var(--mf-text-high)] font-medium text-sm mb-4 tracking-wide uppercase">Yapımcılar</h4>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <Link
+                    href="/producer-studio"
+                    className="inline-flex items-center gap-2 text-[var(--mf-primary-glow)] hover:text-[var(--mf-primary)] transition-colors font-medium"
+                  >
+                    <span>🎬</span> Yapımcı Ol
+                  </Link>
+                </li>
+                <li><Link href="/producer-studio/dashboard" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Yapımcı Paneli</Link></li>
+                <li><Link href="/producer-studio/upload" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Film Yükle</Link></li>
+              </ul>
+            </div>
+
+            {/* Kurumsal */}
+            <div>
+              <h4 className="text-[var(--mf-text-high)] font-medium text-sm mb-4 tracking-wide uppercase">Kurumsal</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/about" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Hakkımızda</Link></li>
+                <li><Link href="/privacy" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Gizlilik</Link></li>
+                <li><Link href="/terms" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Kullanım Koşulları</Link></li>
+                <li><Link href="/contact" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">İletişim</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Row */}
+          <div className="border-t border-[var(--border-subtle)] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-[var(--mf-text-low)] text-sm">© 2024 Mafilu. Tüm hakları saklıdır.</p>
+            <div className="flex items-center gap-6 text-xs text-[var(--mf-text-low)]">
+              <span>Bağımsız Sinema Platformu</span>
+              <span>•</span>
+              <span>Türkiye</span>
+            </div>
           </div>
         </div>
       </footer>
@@ -568,8 +607,8 @@ function MovieCard({ movie, index, isInWatchlist, onToggleWatchlist }: MovieCard
                     onToggleWatchlist();
                   }}
                   className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isInWatchlist
-                      ? "bg-[var(--mf-primary)] text-white"
-                      : "bg-[var(--mf-black)]/60 text-white border border-white/30 hover:border-white"
+                    ? "bg-[var(--mf-primary)] text-white"
+                    : "bg-[var(--mf-black)]/60 text-white border border-white/30 hover:border-white"
                     }`}
                 >
                   {isInWatchlist ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}

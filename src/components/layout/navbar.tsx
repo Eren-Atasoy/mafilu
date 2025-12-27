@@ -52,8 +52,15 @@ export function Navbar() {
         window.location.href = "/";
     };
 
-    // Hide navbar on auth pages only
-    if (pathname?.startsWith("/login") || pathname?.startsWith("/signup") || pathname?.startsWith("/forgot-password") || pathname?.startsWith("/reset-password")) {
+    // Hide navbar on auth pages and producer studio
+    if (
+        pathname?.startsWith("/login") ||
+        pathname?.startsWith("/signup") ||
+        pathname?.startsWith("/forgot-password") ||
+        pathname?.startsWith("/reset-password") ||
+        pathname?.startsWith("/producer-studio") ||
+        pathname?.startsWith("/admin")
+    ) {
         return null;
     }
 
