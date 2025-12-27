@@ -13,7 +13,6 @@ import {
     LogOut,
     Settings,
     Crown,
-    LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
@@ -59,6 +58,7 @@ export function Navbar() {
         pathname?.startsWith("/forgot-password") ||
         pathname?.startsWith("/reset-password") ||
         pathname?.startsWith("/producer-studio") ||
+        pathname?.startsWith("/dashboard") ||
         pathname?.startsWith("/admin")
     ) {
         return null;
@@ -113,14 +113,7 @@ export function Navbar() {
                     <div className="flex items-center gap-3">
                         {user ? (
                             <>
-                                {/* Dashboard Link */}
-                                <Link
-                                    href="/dashboard"
-                                    className="hidden md:flex items-center gap-2 text-sm text-[#A197B0] hover:text-[#F5F3FF] transition-colors"
-                                >
-                                    <LayoutDashboard className="w-4 h-4" />
-                                    Dashboard
-                                </Link>
+
 
                                 {/* User Menu */}
                                 <div className="relative group">
@@ -194,16 +187,7 @@ export function Navbar() {
                                 </Link>
                             );
                         })}
-                        {user && (
-                            <Link
-                                href="/dashboard"
-                                onClick={() => setIsMenuOpen(false)}
-                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#A197B0] hover:bg-[#7C3AED]/5"
-                            >
-                                <LayoutDashboard className="w-5 h-5" />
-                                Dashboard
-                            </Link>
-                        )}
+
                     </div>
                 </div>
             )}

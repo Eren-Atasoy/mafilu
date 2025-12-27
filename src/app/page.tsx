@@ -381,14 +381,14 @@ export default function HomePage() {
               <ul className="space-y-3 text-sm">
                 <li>
                   <Link
-                    href="/producer-studio"
+                    href="/dashboard"
                     className="inline-flex items-center gap-2 text-[var(--mf-primary-glow)] hover:text-[var(--mf-primary)] transition-colors font-medium"
                   >
                     <span>🎬</span> Yapımcı Ol
                   </Link>
                 </li>
-                <li><Link href="/producer-studio/dashboard" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Yapımcı Paneli</Link></li>
-                <li><Link href="/producer-studio/upload" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Film Yükle</Link></li>
+                <li><Link href="/dashboard" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Yapımcı Paneli</Link></li>
+                <li><Link href="/dashboard/movies/upload" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] transition-colors">Film Yükle</Link></li>
               </ul>
             </div>
 
