@@ -6,10 +6,10 @@
 
 export * from "./types";
 export * from "./stripe";
-export * from "./iyzico";
+export * from "./paytr";
 
 import { createStripeCheckoutSession, isStripeConfigured } from "./stripe";
-import { createIyzicoCheckoutSession, isIyzicoConfigured } from "./iyzico";
+import { createPaytrCheckoutSession, isPaytrConfigured } from "./paytr";
 import type { PaymentProvider, CheckoutSession, CustomerInfo } from "./types";
 import { getPlanById } from "./types";
 
@@ -48,11 +48,11 @@ export async function createCheckoutSession(
         );
     }
 
-    if (provider === "iyzico") {
-        if (!isIyzicoConfigured()) {
-            throw new Error("Iyzico is not configured");
+    if (provider === "paytr") {
+        if (!isPaytrConfigured()) {
+            throw new Error("PayTR is not configured");
         }
-        return createIyzicoCheckoutSession(
+        return createPaytrCheckoutSession(
             planId,
             plan.price,
             customer,
@@ -74,8 +74,8 @@ export function getAvailableProviders(): PaymentProvider[] {
         providers.push("stripe");
     }
 
-    if (isIyzicoConfigured()) {
-        providers.push("iyzico");
+    if (isPaytrConfigured()) {
+        providers.push("paytr");
     }
 
     return providers;

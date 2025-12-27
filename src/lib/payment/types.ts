@@ -1,10 +1,10 @@
 /**
  * Payment Provider Abstraction Layer
  * 
- * Supports both Stripe (international) and Iyzico (Turkey)
+ * Supports both Stripe (international) and PayTR (Turkey)
  */
 
-export type PaymentProvider = "stripe" | "iyzico";
+export type PaymentProvider = "stripe" | "paytr";
 
 export interface SubscriptionPlan {
     id: string;
@@ -15,7 +15,6 @@ export interface SubscriptionPlan {
     interval: "month" | "year";
     features: string[];
     stripePriceId?: string;
-    iyzicoPlanId?: string;
 }
 
 export interface CheckoutSession {
@@ -67,7 +66,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "1 cihaz",
         ],
         stripePriceId: process.env.STRIPE_BASIC_PRICE_ID,
-        iyzicoPlanId: process.env.IYZICO_BASIC_PLAN_ID,
     },
     {
         id: "premium",
@@ -85,7 +83,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "Erken erişim yapımları",
         ],
         stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID,
-        iyzicoPlanId: process.env.IYZICO_PREMIUM_PLAN_ID,
     },
     {
         id: "producer_pro",
@@ -102,7 +99,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "%70 gelir paylaşımı",
         ],
         stripePriceId: process.env.STRIPE_PRODUCER_PRICE_ID,
-        iyzicoPlanId: process.env.IYZICO_PRODUCER_PLAN_ID,
     },
 ];
 
@@ -111,6 +107,6 @@ export function getPlanById(planId: string): SubscriptionPlan | undefined {
 }
 
 export function getDefaultProvider(currency?: string): PaymentProvider {
-    // Default to Iyzico for TRY, Stripe for others
-    return currency === "TRY" ? "iyzico" : "stripe";
+    // Default to PayTR for TRY, Stripe for others
+    return currency === "TRY" ? "paytr" : "stripe";
 }
