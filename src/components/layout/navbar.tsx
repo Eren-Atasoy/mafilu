@@ -51,7 +51,8 @@ export function Navbar() {
         window.location.href = "/";
     };
 
-    // Hide navbar on auth pages and producer studio
+    // Hide navbar on auth pages and producer/admin areas
+    // Producer pages have their own sidebar navigation
     if (
         pathname?.startsWith("/login") ||
         pathname?.startsWith("/signup") ||
@@ -59,6 +60,9 @@ export function Navbar() {
         pathname?.startsWith("/reset-password") ||
         pathname?.startsWith("/producer-studio") ||
         pathname?.startsWith("/dashboard") ||
+        pathname?.startsWith("/movies") ||
+        pathname?.startsWith("/earnings") ||
+        pathname?.startsWith("/settings") ||
         pathname?.startsWith("/admin")
     ) {
         return null;
@@ -124,11 +128,11 @@ export function Navbar() {
                                     {/* Dropdown */}
                                     <div className="absolute right-0 top-full mt-2 w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 rounded-xl bg-[#150A24] border border-[#7C3AED]/20 shadow-xl">
                                         <Link
-                                            href="/settings"
+                                            href="/account"
                                             className="flex items-center gap-2 px-4 py-2 text-sm text-[#A197B0] hover:text-[#F5F3FF] hover:bg-[#7C3AED]/10"
                                         >
                                             <Settings className="w-4 h-4" />
-                                            Ayarlar
+                                            Hesabım
                                         </Link>
                                         <button
                                             onClick={handleLogout}
