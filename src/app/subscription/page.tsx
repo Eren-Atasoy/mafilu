@@ -108,7 +108,7 @@ export default function SubscriptionPage() {
                 )}
 
                 {/* Plans Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
                     {SUBSCRIPTION_PLANS.map((plan, index) => {
                         const Icon = planIcons[plan.id as keyof typeof planIcons] || Sparkles;
                         const gradient = planGradients[plan.id as keyof typeof planGradients] || planGradients.free;
@@ -120,17 +120,17 @@ export default function SubscriptionPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                                className={`relative ${isPopular ? "lg:-mt-4 lg:mb-4" : ""}`}
+                                className={`relative flex flex-col ${isPopular ? "lg:-mt-6 lg:mb-6 z-10" : ""}`}
                             >
                                 {isPopular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white text-xs font-medium">
-                                        En Popüler
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white text-xs font-semibold shadow-lg shadow-purple-500/30 z-20">
+                                        ⭐ En Popüler
                                     </div>
                                 )}
                                 <div
-                                    className={`h-full p-6 rounded-2xl border transition-all duration-300 hover:border-[#7C3AED]/50 ${isPopular
-                                        ? "border-[#7C3AED]/30 bg-[#150A24]/80"
-                                        : "border-[#7C3AED]/10 bg-[#150A24]/50"
+                                    className={`flex-1 flex flex-col p-6 rounded-2xl border transition-all duration-300 hover:border-[#7C3AED]/50 ${isPopular
+                                            ? "border-[#7C3AED]/50 bg-gradient-to-b from-[#1E0A36] to-[#150A24] shadow-xl shadow-purple-900/20 ring-1 ring-purple-500/20"
+                                            : "border-[#7C3AED]/10 bg-[#150A24]/50"
                                         }`}
                                 >
                                     {/* Plan Icon */}
@@ -139,12 +139,12 @@ export default function SubscriptionPage() {
                                     </div>
 
                                     {/* Plan Name */}
-                                    <h3 className="text-xl font-bold text-[#F5F3FF] mb-1">{plan.name}</h3>
-                                    <p className="text-sm text-[#6B5F7C] mb-4">{plan.description}</p>
+                                    <h3 className={`text-xl font-bold mb-1 ${isPopular ? "text-white" : "text-[#F5F3FF]"}`}>{plan.name}</h3>
+                                    <p className="text-sm text-[#6B5F7C] mb-4 min-h-[40px]">{plan.description}</p>
 
                                     {/* Price */}
                                     <div className="mb-6">
-                                        <span className="text-3xl font-bold text-[#F5F3FF]">
+                                        <span className={`text-3xl font-bold ${isPopular ? "text-gradient" : "text-[#F5F3FF]"}`}>
                                             {plan.price === 0 ? "Ücretsiz" : `₺${plan.price}`}
                                         </span>
                                         {plan.price > 0 && (
@@ -152,22 +152,22 @@ export default function SubscriptionPage() {
                                         )}
                                     </div>
 
-                                    {/* Features */}
-                                    <ul className="space-y-3 mb-6">
+                                    {/* Features - flex-1 makes this area grow to fill space */}
+                                    <ul className="space-y-3 mb-6 flex-1">
                                         {plan.features.map((feature) => (
                                             <li key={feature} className="flex items-start gap-2 text-sm text-[#A197B0]">
-                                                <Check className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                                                <Check className={`w-4 h-4 flex-shrink-0 mt-0.5 ${isPopular ? "text-purple-400" : "text-green-400"}`} />
                                                 {feature}
                                             </li>
                                         ))}
                                     </ul>
 
-                                    {/* CTA Button */}
+                                    {/* CTA Button - Always at bottom */}
                                     <Button
                                         onClick={() => handleSubscribe(plan.id)}
                                         disabled={isLoading}
-                                        className={`w-full ${isPopular
-                                            ? "bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700"
+                                        className={`w-full mt-auto ${isPopular
+                                            ? "bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 shadow-lg shadow-purple-500/25"
                                             : plan.price === 0
                                                 ? "bg-slate-700 hover:bg-slate-600"
                                                 : "bg-[#7C3AED] hover:bg-[#6D28D9]"
