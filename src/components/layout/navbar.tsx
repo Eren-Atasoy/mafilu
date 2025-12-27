@@ -23,6 +23,7 @@ export function Navbar() {
     const [user, setUser] = useState<SupabaseUser | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
         const getUser = async () => {
@@ -39,10 +40,26 @@ export function Navbar() {
     }, [supabase.auth]);
 
     useEffect(() => {
+        let lastScrollY = window.scrollY;
+
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+            const currentScrollY = window.scrollY;
+
+            // Hide navbar when scrolling down, show when scrolling up
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                setIsScrolled(true);
+                setIsVisible(false);
+            } else {
+                setIsVisible(true);
+            }
+
+            // Background effect when scrolled
+            setIsScrolled(currentScrollY > 20);
+
+            lastScrollY = currentScrollY;
         };
-        window.addEventListener("scroll", handleScroll);
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -77,8 +94,9 @@ export function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                ? "bg-[#0A0510]/90 backdrop-blur-lg border-b border-[#7C3AED]/10"
-                : "bg-transparent"
+                    ? "bg-[#0A0510]/90 backdrop-blur-lg border-b border-[#7C3AED]/10"
+                    : "bg-transparent"
+                } ${isVisible ? "translate-y-0" : "-translate-y-full"
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
