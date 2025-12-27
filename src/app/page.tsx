@@ -315,21 +315,6 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* Side Navigation Arrows */}
-        <button
-          onClick={() => goToSlide((currentHeroIndex - 1 + heroMovies.length) % heroMovies.length)}
-          className="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-[var(--mf-black)]/60 hover:bg-[var(--mf-dark)] rounded-full transition-all border border-[var(--border-subtle)] backdrop-blur-sm opacity-0 hover:opacity-100 focus:opacity-100"
-          style={{ opacity: 0.7 }}
-        >
-          <ChevronLeft className="w-6 h-6 text-white" />
-        </button>
-        <button
-          onClick={() => goToSlide((currentHeroIndex + 1) % heroMovies.length)}
-          className="absolute right-6 md:right-12 top-1/2 -translate-y-1/2 z-30 w-12 h-12 flex items-center justify-center bg-[var(--mf-black)]/60 hover:bg-[var(--mf-dark)] rounded-full transition-all border border-[var(--border-subtle)] backdrop-blur-sm opacity-0 hover:opacity-100 focus:opacity-100"
-          style={{ opacity: 0.7 }}
-        >
-          <ChevronRight className="w-6 h-6 text-white" />
-        </button>
       </section>
 
       {/* ================================================
