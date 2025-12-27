@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { bunnyStream } from "@/lib/bunny";
 import { ViewCounter } from "@/components/video/view-counter";
@@ -15,6 +15,14 @@ interface PageProps {
 export default async function WatchPage({ params }: PageProps) {
     const { id } = await params;
     const supabase = await createClient();
+
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        // Redirect to login with return URL
+        redirect(`/login?next=/watch/${id}`);
+    }
 
     // Fetch movie details
     const { data: movie, error } = await supabase

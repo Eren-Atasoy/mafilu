@@ -15,6 +15,7 @@ function LoginContent() {
     const isConfirmed = searchParams.get("confirmed") === "true";
     const isPasswordReset = searchParams.get("reset") === "success";
     const authError = searchParams.get("error");
+    const nextUrl = searchParams.get("next") || "/";
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -36,7 +37,7 @@ function LoginContent() {
             if (error) {
                 setError(error.message);
             } else {
-                router.push("/browse");
+                router.push(nextUrl);
                 router.refresh();
             }
         } catch {

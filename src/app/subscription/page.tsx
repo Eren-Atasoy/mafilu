@@ -29,7 +29,7 @@ export default function SubscriptionPage() {
 
     const handleSubscribe = async (planId: string) => {
         if (planId === "free") {
-            router.push("/browse");
+            router.push("/");
             return;
         }
 
