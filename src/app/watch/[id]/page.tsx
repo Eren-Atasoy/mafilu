@@ -5,6 +5,7 @@ import { ViewCounter } from "@/components/video/view-counter";
 import { RelatedMovies } from "@/components/video/related-movies";
 import { MovieActions } from "@/components/video/movie-actions";
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
     Eye,
     Calendar,
@@ -18,6 +19,49 @@ import {
 
 interface PageProps {
     params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { id } = await params;
+    const supabase = await createClient();
+
+    const { data: movie } = await supabase
+        .from("movies")
+        .select("title, description, genre, release_year, thumbnail_url, bunny_video_id")
+        .eq("id", id)
+        .eq("status", "approved")
+        .single();
+
+    if (!movie) {
+        return {
+            title: "Film Bulunamadı | Mafilu",
+            description: "Aradığınız film bulunamadı.",
+        };
+    }
+
+    const thumbnailUrl = movie.thumbnail_url || 
+        (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined);
+
+    return {
+        title: `${movie.title} | Mafilu`,
+        description: movie.description || `${movie.title} - ${movie.genre} türünde ${movie.release_year} yapımı bağımsız sinema filmi.`,
+        openGraph: {
+            title: movie.title,
+            description: movie.description || `${movie.title} - Bağımsız sinema filmi`,
+            type: "video.movie",
+            images: thumbnailUrl ? [{ url: thumbnailUrl }] : [],
+            siteName: "Mafilu",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: movie.title,
+            description: movie.description || `${movie.title} - Bağımsız sinema filmi`,
+            images: thumbnailUrl ? [thumbnailUrl] : [],
+        },
+        alternates: {
+            canonical: `/watch/${id}`,
+        },
+    };
 }
 
 export default async function WatchPage({ params }: PageProps) {

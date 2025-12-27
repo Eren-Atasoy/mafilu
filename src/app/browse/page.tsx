@@ -1,6 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
 import { bunnyStream } from "@/lib/bunny";
 import BrowseClient from "./browse-client";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Filmleri Keşfet | Mafilu",
+    description: "Bağımsız sinema filmlerini keşfedin. Tür, yıl ve daha fazlasına göre filtreleyin.",
+    openGraph: {
+        title: "Filmleri Keşfet | Mafilu",
+        description: "Bağımsız sinema filmlerini keşfedin. Tür, yıl ve daha fazlasına göre filtreleyin.",
+        type: "website",
+        siteName: "Mafilu",
+    },
+    twitter: {
+        card: "summary",
+        title: "Filmleri Keşfet | Mafilu",
+        description: "Bağımsız sinema filmlerini keşfedin.",
+    },
+    alternates: {
+        canonical: "/browse",
+    },
+};
 
 export default async function BrowsePage() {
     const supabase = await createClient();
