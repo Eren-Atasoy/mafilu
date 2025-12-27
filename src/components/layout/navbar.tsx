@@ -84,12 +84,10 @@ export function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#A855F7] flex items-center justify-center">
-                            <Film className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-[#F5F3FF] headline-serif hidden sm:block">
-                            mafilu
+                    <Link href="/" className="flex items-center gap-3">
+                        <Film className="w-7 h-7 text-[#A855F7]" />
+                        <span className="text-xl font-bold text-[#F5F3FF] headline-serif tracking-tight">
+                            Mafilu
                         </span>
                     </Link>
 
