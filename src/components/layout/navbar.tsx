@@ -94,7 +94,7 @@ export function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                    ? "bg-[#0A0510]/90 backdrop-blur-lg border-b border-[#7C3AED]/10"
+                    ? "bg-[var(--mf-black-alt)]/90 backdrop-blur-lg border-b border-[var(--mf-primary-dark)]/10"
                     : "bg-transparent"
                 } ${isVisible ? "translate-y-0" : "-translate-y-full"
                 }`}
@@ -103,8 +103,8 @@ export function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-3">
-                        <Film className="w-7 h-7 text-[#A855F7]" />
-                        <span className="text-xl font-bold text-[#F5F3FF] headline-serif tracking-tight">
+                        <Film className="w-7 h-7 text-[var(--mf-primary-glow-alt)]" />
+                        <span className="text-xl font-bold text-[var(--mf-text-high)] headline-serif tracking-tight">
                             Mafilu
                         </span>
                     </Link>
@@ -118,8 +118,8 @@ export function Navbar() {
                                     key={link.href}
                                     href={link.href}
                                     className={`flex items-center gap-2 text-sm transition-colors ${pathname === link.href
-                                        ? "text-[#A855F7]"
-                                        : "text-[#A197B0] hover:text-[#F5F3FF]"
+                                        ? "text-[var(--mf-primary-glow-alt)]"
+                                        : "text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)]"
                                         }`}
                                 >
                                     <link.icon className="w-4 h-4" />
@@ -137,15 +137,15 @@ export function Navbar() {
 
                                 {/* User Menu */}
                                 <div className="relative group">
-                                    <button className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#A855F7] flex items-center justify-center text-white font-bold text-sm">
+                                    <button className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--mf-primary-dark)] to-[var(--mf-primary-glow-alt)] flex items-center justify-center text-white font-bold text-sm">
                                         {user.email?.[0].toUpperCase() || "U"}
                                     </button>
 
                                     {/* Dropdown */}
-                                    <div className="absolute right-0 top-full mt-2 w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 rounded-xl bg-[#150A24] border border-[#7C3AED]/20 shadow-xl">
+                                    <div className="absolute right-0 top-full mt-2 w-48 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 rounded-xl bg-[var(--mf-dark-alt)] border border-[var(--mf-primary-dark)]/20 shadow-xl">
                                         <Link
                                             href="/account"
-                                            className="flex items-center gap-2 px-4 py-2 text-sm text-[#A197B0] hover:text-[#F5F3FF] hover:bg-[#7C3AED]/10"
+                                            className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)] hover:bg-[var(--mf-primary-dark)]/10"
                                         >
                                             <Settings className="w-4 h-4" />
                                             Hesabım
@@ -163,12 +163,12 @@ export function Navbar() {
                         ) : (
                             <>
                                 <Link href="/login">
-                                    <Button variant="ghost" className="text-[#A197B0] hover:text-[#F5F3FF]">
+                                    <Button variant="ghost" className="text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)]">
                                         Giriş
                                     </Button>
                                 </Link>
                                 <Link href="/signup">
-                                    <Button className="bg-[#7C3AED] hover:bg-[#6D28D9]">
+                                    <Button className="bg-[var(--mf-primary-dark)] hover:bg-[var(--mf-primary-darker)]">
                                         Kayıt Ol
                                     </Button>
                                 </Link>
@@ -178,7 +178,7 @@ export function Navbar() {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="md:hidden p-2 text-[#A197B0] hover:text-[#F5F3FF]"
+                            className="md:hidden p-2 text-[var(--mf-text-medium)] hover:text-[var(--mf-text-high)]"
                         >
                             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
@@ -188,7 +188,7 @@ export function Navbar() {
 
             {/* Mobile Menu */}
             {isMenuOpen && (
-                <div className="md:hidden bg-[#0A0510]/95 backdrop-blur-lg border-t border-[#7C3AED]/10">
+                <div className="md:hidden bg-[var(--mf-black-alt)]/95 backdrop-blur-lg border-t border-[var(--mf-primary-dark)]/10">
                     <div className="px-4 py-4 space-y-2">
                         {navLinks.map((link) => {
                             if (link.auth && !user) return null;
@@ -198,8 +198,8 @@ export function Navbar() {
                                     href={link.href}
                                     onClick={() => setIsMenuOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${pathname === link.href
-                                        ? "bg-[#7C3AED]/10 text-[#A855F7]"
-                                        : "text-[#A197B0] hover:bg-[#7C3AED]/5"
+                                        ? "bg-[var(--mf-primary-dark)]/10 text-[var(--mf-primary-glow-alt)]"
+                                        : "text-[var(--mf-text-medium)] hover:bg-[var(--mf-primary-dark)]/5"
                                         }`}
                                 >
                                     <link.icon className="w-5 h-5" />

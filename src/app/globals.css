@@ -17,8 +17,12 @@
   /* === THE DEPTHS (Background Layers) === */
   --mf-black: #050208;
   /* Base - Almost black with purple soul */
+  --mf-black-alt: #0A0510;
+  /* Alternative black - Slightly lighter */
   --mf-dark: #120621;
   /* Surface - Cards and sections */
+  --mf-dark-alt: #150A24;
+  /* Alternative dark - Slightly lighter */
   --mf-surface: #1E0A36;
   /* Elevated - Hover states, popups */
   --mf-elevated: #2B0F3F;
@@ -27,8 +31,14 @@
   /* === THE GLOW (Brand & Action) === */
   --mf-primary: #8B5CF6;
   /* Vibrant Violet - Main actions */
+  --mf-primary-dark: #7C3AED;
+  /* Darker purple - Buttons, borders */
+  --mf-primary-darker: #6D28D9;
+  /* Even darker - Hover states */
   --mf-primary-glow: #A78BFA;
   /* Light purple - Hover glow */
+  --mf-primary-glow-alt: #A855F7;
+  /* Alternative glow - Slightly different shade */
   --mf-accent: #F472B6;
   /* Hot pink - "LIVE" and "NEW" badges */
   --mf-accent-warm: #FB923C;
@@ -41,6 +51,10 @@
   /* Body text - Muted lavender */
   --mf-text-low: #4B3D60;
   /* Placeholders - Dim purple */
+  --mf-text-muted: #6B5F7C;
+  /* Muted text - Between low and medium */
+  --mf-text-accent: #C4B5FD;
+  /* Accent text - Light purple */
 
   /* === PREMIUM GRADIENTS === */
   --gradient-cinema: radial-gradient(ellipse at top, #2B0F3F 0%, #050208 100%);
