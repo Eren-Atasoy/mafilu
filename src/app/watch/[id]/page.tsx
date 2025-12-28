@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         };
     }
 
-    const thumbnailUrl = movie.thumbnail_url || 
+    const thumbnailUrl = movie.thumbnail_url ||
         (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined);
 
     return {
@@ -108,11 +108,11 @@ export default async function WatchPage({ params }: PageProps) {
                     <div>
                         <h1 className="text-2xl font-bold text-white mb-2">{movie.title}</h1>
                         <p className="text-slate-400">
-                            {movie.status === "pending_review" 
+                            {movie.status === "pending_review"
                                 ? "Bu film henüz onay bekliyor. Onaylandıktan sonra izleyebilirsiniz."
                                 : movie.status === "rejected"
-                                ? "Bu film onaylanmamış."
-                                : "Bu film henüz yayında değil."}
+                                    ? "Bu film onaylanmamış."
+                                    : "Bu film henüz yayında değil."}
                         </p>
                     </div>
                     <Link
@@ -152,12 +152,44 @@ export default async function WatchPage({ params }: PageProps) {
         ? bunnyStream.getEmbedUrl(movie.bunny_video_id, true)
         : null;
 
+    const thumbnailUrl = movie.thumbnail_url ||
+        (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined);
+
     // Mock duration for demo
     const duration = movie.duration || "2s 15dk";
     const rating = movie.rating || "8.5";
 
+    // JSON-LD Structured Data for SEO
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Movie",
+        name: movie.title,
+        description: movie.description,
+        genre: movie.genre,
+        datePublished: movie.release_year ? `${movie.release_year}-01-01` : undefined,
+        director: movie.profiles?.full_name ? {
+            "@type": "Person",
+            name: movie.profiles.full_name,
+        } : undefined,
+        aggregateRating: movie.average_rating ? {
+            "@type": "AggregateRating",
+            ratingValue: movie.average_rating,
+            bestRating: 5,
+            worstRating: 1,
+            ratingCount: movie.rating_count || 1,
+        } : undefined,
+        image: thumbnailUrl,
+        url: `https://mafilu.com/watch/${id}`,
+    };
+
     return (
         <div className="min-h-screen bg-[var(--mf-black)]">
+            {/* JSON-LD Structured Data */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+
             <ViewCounter movieId={id} />
 
             {/* Back Button - Fixed */}
