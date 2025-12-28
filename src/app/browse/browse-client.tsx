@@ -26,8 +26,15 @@ interface BrowseClientProps {
 export default function BrowseClient({ movies, genres }: BrowseClientProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
-    const [sortBy, setSortBy] = useState<"newest" | "popular" | "oldest">("newest");
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const [sortBy, setSortBy] = useState<"newest" | "popular" | "oldest" | "rating">("newest");
     const [showFilters, setShowFilters] = useState(false);
+
+    // Extract unique years from movies
+    const years = useMemo(() => {
+        const uniqueYears = [...new Set(movies.map(m => m.release_year).filter(Boolean))] as number[];
+        return uniqueYears.sort((a, b) => b - a);
+    }, [movies]);
 
     // Filter and sort movies
     const filteredMovies = useMemo(() => {
@@ -51,6 +58,11 @@ export default function BrowseClient({ movies, genres }: BrowseClientProps) {
             );
         }
 
+        // Year filter
+        if (selectedYear) {
+            result = result.filter(movie => movie.release_year === selectedYear);
+        }
+
         // Sort
         switch (sortBy) {
             case "popular":
@@ -59,21 +71,30 @@ export default function BrowseClient({ movies, genres }: BrowseClientProps) {
             case "oldest":
                 result.sort((a, b) => (a.release_year || 0) - (b.release_year || 0));
                 break;
+            case "rating":
+                // Sort by rating if available (higher first)
+                result.sort((a, b) => {
+                    const ratingA = (a as any).average_rating || 0;
+                    const ratingB = (b as any).average_rating || 0;
+                    return ratingB - ratingA;
+                });
+                break;
             case "newest":
             default:
                 result.sort((a, b) => (b.release_year || 0) - (a.release_year || 0));
         }
 
         return result;
-    }, [movies, searchQuery, selectedGenre, sortBy]);
+    }, [movies, searchQuery, selectedGenre, selectedYear, sortBy]);
 
     const clearFilters = () => {
         setSearchQuery("");
         setSelectedGenre(null);
+        setSelectedYear(null);
         setSortBy("newest");
     };
 
-    const hasActiveFilters = searchQuery || selectedGenre || sortBy !== "newest";
+    const hasActiveFilters = searchQuery || selectedGenre || selectedYear || sortBy !== "newest";
 
     return (
         <>
@@ -153,6 +174,7 @@ export default function BrowseClient({ movies, genres }: BrowseClientProps) {
                                         {[
                                             { value: "newest", label: "En Yeni" },
                                             { value: "popular", label: "En Popüler" },
+                                            { value: "rating", label: "En Yüksek Puan" },
                                             { value: "oldest", label: "En Eski" },
                                         ].map((option) => (
                                             <button
@@ -168,6 +190,36 @@ export default function BrowseClient({ movies, genres }: BrowseClientProps) {
                                         ))}
                                     </div>
                                 </div>
+
+                                {/* Year Filter */}
+                                {years.length > 0 && (
+                                    <div>
+                                        <label className="text-sm font-medium text-[var(--mf-text-accent)] block mb-2">Yıl</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            <button
+                                                onClick={() => setSelectedYear(null)}
+                                                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${!selectedYear
+                                                    ? "bg-[var(--mf-primary-dark)] text-white"
+                                                    : "bg-[var(--mf-primary-dark)]/10 text-[var(--mf-text-accent)] hover:bg-[var(--mf-primary-dark)]/20"
+                                                    }`}
+                                            >
+                                                Tümü
+                                            </button>
+                                            {years.slice(0, 10).map((year) => (
+                                                <button
+                                                    key={year}
+                                                    onClick={() => setSelectedYear(year)}
+                                                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedYear === year
+                                                        ? "bg-[var(--mf-primary-dark)] text-white"
+                                                        : "bg-[var(--mf-primary-dark)]/10 text-[var(--mf-text-accent)] hover:bg-[var(--mf-primary-dark)]/20"
+                                                        }`}
+                                                >
+                                                    {year}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Clear Filters */}
                                 {hasActiveFilters && (

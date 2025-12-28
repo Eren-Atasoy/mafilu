@@ -78,13 +78,13 @@
   - [ ] Approved movies'e `bunny_video_id` ekle
 
 #### 5. Mobile Navigation Bug (TC011)
-- **Durum:** Orta öncelik
-- **Sorun:** Logo tıklama sorunu (test'te hata)
+- **Durum:** ✅ TAMAMLANDI
+- **Sorun:** Logo tıklama sorunu
 - **Dosya:** `src/components/layout/navbar.tsx`
-- **Not:** Kod doğru görünüyor, tekrar test edilmeli
-- **Yapılacak:**
-  - [ ] Mobile'da logo link'ini test et
-  - [ ] Homepage content disappearing sorununu kontrol et
+- **Çözüm:** Logo link'e onClick handler eklendi
+- **Yapılanlar:**
+  - [x] Mobile'da logo link'i düzeltildi (onClick ile menu kapatılıyor)
+  - [ ] Homepage content disappearing kontrolü (manuel test)
 
 ---
 
@@ -117,18 +117,18 @@
 - [ ] Advanced filtering (tarih, producer, genre)
 - [ ] Export functionality (CSV export)
 
-#### 8. Rating Calculation (TODO)
-- **Durum:** Hardcoded "8.5" rating
-- **Dosya:** `src/lib/supabase/queries.ts` (line 108, 151)
-- **Yapılacak:**
-  - [ ] Gerçek rating hesaplama (movie_ratings tablosundan)
-  - [ ] Average rating kullan
-  - [ ] Rating count göster
+#### 8. Rating Calculation
+- **Durum:** ✅ TAMAMLANDI
+- **Dosya:** `src/lib/supabase/queries.ts` (line 100-105)
+- **Yapılanlar:**
+  - [x] Gerçek rating hesaplama (average_rating field kullanılıyor)
+  - [x] Rating "Yeni" gösteriyor (rating yoksa)
+  - [x] N/A gösteriyor (rating_count > 0 ama average yok)
 
 - [x] Genre filter (UI var)
-- [ ] Filter sonuçlarının düzgün çalışması (TC006)
-- [ ] Year filter
-- [ ] Sort options (popularity, date, rating)
+- [x] Filter sonuçlarının düzgün çalışması ✅
+- [x] Year filter ✅
+- [x] Sort options (popularity, date, rating) ✅
 - [ ] Real-time search improvements
 
 ---
