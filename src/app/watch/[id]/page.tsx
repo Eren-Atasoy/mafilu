@@ -20,6 +20,9 @@ import {
     Users
 } from "lucide-react";
 
+// Force dynamic rendering - uses cookies for auth
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }

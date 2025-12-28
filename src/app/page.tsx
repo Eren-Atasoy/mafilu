@@ -2,6 +2,9 @@ import Link from "next/link";
 import { getFeaturedMovies, getMovieCategories } from "@/lib/supabase/queries";
 import { HomeClient } from "@/components/home/home-client";
 
+// Force dynamic rendering since we use Supabase with cookies
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   // Fetch real data from Supabase
   const [heroMovies, categories] = await Promise.all([

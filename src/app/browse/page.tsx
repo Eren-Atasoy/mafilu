@@ -3,6 +3,9 @@ import { bunnyStream } from "@/lib/bunny";
 import BrowseClient from "./browse-client";
 import type { Metadata } from "next";
 
+// Force dynamic rendering - uses Supabase server client
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: "Filmleri Keşfet | Mafilu",
     description: "Bağımsız sinema filmlerini keşfedin. Tür, yıl ve daha fazlasına göre filtreleyin.",
