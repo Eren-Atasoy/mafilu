@@ -66,7 +66,13 @@ export async function updateSession(request: NextRequest) {
         request.nextUrl.pathname.startsWith(path)
     );
 
-    if (isProducerPath && user) {
+    // Admin-only routes
+    const adminPaths = ['/admin'];
+    const isAdminPath = adminPaths.some((path) =>
+        request.nextUrl.pathname.startsWith(path)
+    );
+
+    if ((isProducerPath || isAdminPath) && user) {
         // Check user role from profiles table
         const { data: profile } = await supabase
             .from('profiles')
@@ -74,11 +80,22 @@ export async function updateSession(request: NextRequest) {
             .eq('id', user.id)
             .single();
 
-        // Redirect non-producers to home (or a "become producer" page)
-        if (profile?.role !== 'producer' && profile?.role !== 'admin') {
-            const url = request.nextUrl.clone();
-            url.pathname = '/';
-            return NextResponse.redirect(url);
+        // Handle Producer Paths
+        if (isProducerPath) {
+            if (profile?.role !== 'producer' && profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+                const url = request.nextUrl.clone();
+                url.pathname = '/';
+                return NextResponse.redirect(url);
+            }
+        }
+
+        // Handle Admin Paths
+        if (isAdminPath) {
+            if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+                const url = request.nextUrl.clone();
+                url.pathname = '/';
+                return NextResponse.redirect(url);
+            }
         }
     }
 

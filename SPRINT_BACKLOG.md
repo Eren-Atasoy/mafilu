@@ -113,6 +113,8 @@
 
 - [x] Video preview (admin review sayfasında)
 - [x] Approve/Reject butonları
+- [x] Admin Access Control (Middleware role check)
+- [x] Admin Role Helper Script
 - [ ] Bulk operations (toplu onaylama/reddetme)
 - [ ] Advanced filtering (tarih, producer, genre)
 - [ ] Export functionality (CSV export)
