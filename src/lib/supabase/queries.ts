@@ -51,7 +51,7 @@ export async function getFeaturedMovies(): Promise<FeaturedMovie[]> {
 
     const { data: movies, error } = await supabase
       .from("movies")
-      .select("id, title, description, genre, release_year, bunny_video_id, featured, featured_order, created_at")
+      .select("id, title, description, genre, release_year, bunny_video_id, featured, featured_order, created_at, average_rating, rating_count")
       .eq("status", "approved")
       .eq("featured", true)
       .order("featured_order", { ascending: true, nullsFirst: false })
@@ -67,7 +67,7 @@ export async function getFeaturedMovies(): Promise<FeaturedMovie[]> {
       // Fallback: get most recent approved movies if no featured movies
       const { data: fallbackMovies } = await supabase
         .from("movies")
-        .select("id, title, description, genre, release_year, bunny_video_id, created_at")
+        .select("id, title, description, genre, release_year, bunny_video_id, created_at, average_rating, rating_count")
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(3);
@@ -97,6 +97,13 @@ function formatFeaturedMovie(movie: any, index: number): FeaturedMovie {
     ? formatDuration(movie.duration_seconds)
     : "2s 00dk";
 
+  // Calculate rating from average_rating field (calculated by trigger)
+  const rating = movie.average_rating 
+    ? movie.average_rating.toFixed(1) 
+    : movie.rating_count && movie.rating_count > 0 
+      ? "N/A" 
+      : "Yeni";
+
   return {
     id: movie.id,
     title: movie.title,
@@ -105,7 +112,7 @@ function formatFeaturedMovie(movie: any, index: number): FeaturedMovie {
     description: movie.description,
     genre: formatGenre(movie.genre),
     year: movie.release_year,
-    rating: "8.5", // TODO: Calculate from movie_ratings table
+    rating,
     duration,
     maturity: "16+",
     thumbnailUrl: movie.bunny_video_id
@@ -126,7 +133,7 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
     // Get all approved movies
     const { data: allMovies, error } = await supabase
       .from("movies")
-      .select("id, title, genre, release_year, bunny_video_id, featured, created_at")
+      .select("id, title, genre, release_year, bunny_video_id, featured, created_at, average_rating, rating_count")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
@@ -143,18 +150,27 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Format movies for cards
-    const formattedMovies = allMovies.map((movie) => ({
-      id: movie.id,
-      title: movie.title,
-      genre: formatGenre(movie.genre),
-      year: movie.release_year,
-      rating: "8.5", // TODO: Calculate from movie_ratings table
-      isNew: new Date(movie.created_at) > thirtyDaysAgo,
-      isOriginal: movie.featured || false,
-      thumbnailUrl: movie.bunny_video_id
-        ? bunnyStream.getThumbnailUrl(movie.bunny_video_id)
-        : undefined,
-    }));
+    const formattedMovies = allMovies.map((movie) => {
+      // Calculate rating from average_rating field (calculated by trigger)
+      const rating = movie.average_rating 
+        ? movie.average_rating.toFixed(1) 
+        : movie.rating_count && movie.rating_count > 0 
+          ? "N/A" 
+          : "Yeni";
+
+      return {
+        id: movie.id,
+        title: movie.title,
+        genre: formatGenre(movie.genre),
+        year: movie.release_year,
+        rating,
+        isNew: new Date(movie.created_at) > thirtyDaysAgo,
+        isOriginal: movie.featured || false,
+        thumbnailUrl: movie.bunny_video_id
+          ? bunnyStream.getThumbnailUrl(movie.bunny_video_id)
+          : undefined,
+      };
+    });
 
     // Build categories
     const categories: MovieCategory[] = [];
