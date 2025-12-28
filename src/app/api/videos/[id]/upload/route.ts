@@ -6,6 +6,9 @@ interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
+// Export maxDuration for Vercel (60 seconds max for Hobby plan)
+export const maxDuration = 60;
+
 export async function PUT(request: NextRequest, { params }: RouteParams) {
     try {
         const { id: videoId } = await params;
@@ -55,6 +58,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         const blob = await request.blob();
         const arrayBuffer = await blob.arrayBuffer();
 
+        // Log file size for debugging
+        const fileSizeMB = (arrayBuffer.byteLength / (1024 * 1024)).toFixed(2);
+        console.log(`Uploading video ${videoId}, size: ${fileSizeMB} MB`);
+
         // Use service to upload
         // Note: For large files, loading into memory (ArrayBuffer) is bad practice in Node.
         // But Next.js App Router Request body handling is stream-based.
@@ -76,6 +83,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     } catch (error) {
         console.error("Upload proxy error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ 
+            error: "Internal Server Error",
+            message: error instanceof Error ? error.message : "Unknown error"
+        }, { status: 500 });
     }
 }

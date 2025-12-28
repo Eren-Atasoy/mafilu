@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
             success: true,
             videoId: uploadData.videoId,
             uploadUrl: uploadData.uploadUrl,
+            accessKey: uploadData.authorizationSignature, // API key for direct upload
             libraryId: uploadData.libraryId,
             expiresAt: uploadData.authorizationExpire,
         });

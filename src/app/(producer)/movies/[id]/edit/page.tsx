@@ -142,13 +142,17 @@ export default function EditMoviePage() {
                 throw new Error(data.error || "Create failed");
             }
 
-            const { videoId } = await createResponse.json();
+            const { videoId, uploadUrl, accessKey } = await createResponse.json();
 
-            // 2. Upload Content via Proxy
+            // 2. Upload Content Directly to Bunny.net (Direct Upload)
             await new Promise<void>((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
-                // Upload to our local proxy
-                xhr.open("PUT", `/api/videos/${videoId}/upload`, true);
+                // Upload directly to Bunny.net
+                xhr.open("PUT", uploadUrl, true);
+                
+                // Set Bunny.net authentication header
+                xhr.setRequestHeader("AccessKey", accessKey);
+                xhr.setRequestHeader("Content-Type", "application/octet-stream");
 
                 xhr.upload.onprogress = (e) => {
                     if (e.lengthComputable) {
@@ -162,15 +166,29 @@ export default function EditMoviePage() {
                         resolve();
                     } else {
                         try {
-                            const errorData = JSON.parse(xhr.responseText);
-                            reject(new Error(errorData.error || errorData.details || "Upload failed"));
+                            const errorText = xhr.responseText;
+                            let errorMessage = `Upload failed: ${xhr.status} ${xhr.statusText}`;
+                            
+                            if (xhr.status === 403) {
+                                errorMessage = "Bunny.net API key yetkisi yok. Lütfen yöneticiye başvurun.";
+                            } else if (xhr.status === 404) {
+                                errorMessage = "Video bulunamadı. Lütfen tekrar deneyin.";
+                            } else if (errorText) {
+                                errorMessage = errorText;
+                            }
+                            
+                            reject(new Error(errorMessage));
                         } catch {
                             reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
                         }
                     }
                 };
 
-                xhr.onerror = () => reject(new Error("Network error"));
+                xhr.onerror = () => reject(new Error("Network error - İnternet bağlantınızı kontrol edin"));
+                xhr.ontimeout = () => reject(new Error("Upload timeout - Dosya çok büyük olabilir"));
+
+                // Set timeout to 30 minutes for large files
+                xhr.timeout = 30 * 60 * 1000;
 
                 xhr.send(videoFile);
             });
