@@ -159,8 +159,17 @@ export default async function WatchPage({ params }: PageProps) {
         (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined);
 
     // Mock duration for demo
-    const duration = movie.duration || "2s 15dk";
-    const rating = movie.rating || "8.5";
+    // Format duration from seconds
+    const formatDuration = (seconds?: number) => {
+        if (!seconds) return "Belirsiz";
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return `${h}s ${m}dk`;
+        return `${m}dk`;
+    };
+
+    const duration = formatDuration(movie.duration_seconds);
+    const rating = movie.average_rating ? movie.average_rating.toFixed(1) : "N/A";
 
     // JSON-LD Structured Data for SEO
     const jsonLd = {
@@ -186,7 +195,7 @@ export default async function WatchPage({ params }: PageProps) {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--mf-black)]">
+        <div className="min-h-screen bg-[var(--mf-black)] pt-24">
             {/* JSON-LD Structured Data */}
             <script
                 type="application/ld+json"
@@ -195,14 +204,7 @@ export default async function WatchPage({ params }: PageProps) {
 
             <ViewCounter movieId={id} />
 
-            {/* Back Button - Fixed */}
-            <Link
-                href="/"
-                className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-black/80 transition-all"
-            >
-                <ChevronLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Geri</span>
-            </Link>
+
 
             {/* Hero Video Player Section */}
             <section className="relative">
@@ -225,7 +227,7 @@ export default async function WatchPage({ params }: PageProps) {
             </section>
 
             {/* Content Section */}
-            <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 -mt-16">
+            <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 mt-8">
                 {/* Movie Info Header */}
                 <div className="mb-10">
                     {/* Title */}

@@ -146,14 +146,7 @@ export function HeroSection({ movies }: HeroSectionProps) {
                   <span>Oynat</span>
                 </motion.button>
               </Link>
-              <motion.button
-                className="btn-secondary"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Info className="w-5 h-5" />
-                <span>Detaylar</span>
-              </motion.button>
+
             </div>
           </motion.div>
         </AnimatePresence>
@@ -170,11 +163,10 @@ export function HeroSection({ movies }: HeroSectionProps) {
               aria-label={`Go to ${movie.title}`}
             >
               <div
-                className={`h-[3px] rounded-full transition-all duration-500 ${
-                  index === currentHeroIndex
+                className={`h-[3px] rounded-full transition-all duration-500 ${index === currentHeroIndex
                     ? "w-16 bg-[var(--mf-primary)]"
                     : "w-8 bg-white/30 group-hover:bg-white/50"
-                }`}
+                  }`}
               />
               {index === currentHeroIndex && (
                 <motion.div

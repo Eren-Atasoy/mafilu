@@ -201,7 +201,11 @@ function MovieCard({ movie, index, isInWatchlist, onToggleWatchlist }: MovieCard
                 <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-3 shadow-lg">
                   <Play className="w-6 h-6 text-[var(--mf-black)] fill-current ml-1" />
                 </div>
-                <p className="text-xs text-[var(--mf-text-medium)]">{movie.genre}</p>
+                <div className="px-4 text-center">
+                  <p className="text-xs text-[var(--mf-text-medium)] line-clamp-3 leading-relaxed">
+                    {movie.description || movie.genre}
+                  </p>
+                </div>
 
                 {/* Watchlist Button */}
                 <button
@@ -210,11 +214,10 @@ function MovieCard({ movie, index, isInWatchlist, onToggleWatchlist }: MovieCard
                     e.stopPropagation();
                     onToggleWatchlist();
                   }}
-                  className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
-                    isInWatchlist
+                  className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isInWatchlist
                       ? "bg-[var(--mf-primary)] text-white"
                       : "bg-[var(--mf-black)]/60 text-white border border-white/30 hover:border-white"
-                  }`}
+                    }`}
                 >
                   {isInWatchlist ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </button>

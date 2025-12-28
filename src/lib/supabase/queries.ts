@@ -34,6 +34,7 @@ export interface MovieCard {
   id: string;
   title: string;
   genre: string;
+  description?: string | null;
   year: number | null;
   rating: string;
   isNew?: boolean;
@@ -98,10 +99,10 @@ function formatFeaturedMovie(movie: any, index: number): FeaturedMovie {
     : "2s 00dk";
 
   // Calculate rating from average_rating field (calculated by trigger)
-  const rating = movie.average_rating 
-    ? movie.average_rating.toFixed(1) 
-    : movie.rating_count && movie.rating_count > 0 
-      ? "N/A" 
+  const rating = movie.average_rating
+    ? movie.average_rating.toFixed(1)
+    : movie.rating_count && movie.rating_count > 0
+      ? "N/A"
       : "Yeni";
 
   return {
@@ -133,7 +134,7 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
     // Get all approved movies
     const { data: allMovies, error } = await supabase
       .from("movies")
-      .select("id, title, genre, release_year, bunny_video_id, featured, created_at, average_rating, rating_count")
+      .select("id, title, description, genre, release_year, bunny_video_id, featured, created_at, average_rating, rating_count")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
@@ -152,15 +153,16 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
     // Format movies for cards
     const formattedMovies = allMovies.map((movie) => {
       // Calculate rating from average_rating field (calculated by trigger)
-      const rating = movie.average_rating 
-        ? movie.average_rating.toFixed(1) 
-        : movie.rating_count && movie.rating_count > 0 
-          ? "N/A" 
+      const rating = movie.average_rating
+        ? movie.average_rating.toFixed(1)
+        : movie.rating_count && movie.rating_count > 0
+          ? "N/A"
           : "Yeni";
 
       return {
         id: movie.id,
         title: movie.title,
+        description: movie.description,
         genre: formatGenre(movie.genre),
         year: movie.release_year,
         rating,
@@ -244,7 +246,7 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  
+
   if (hours > 0) {
     return `${hours}s ${minutes}dk`;
   }

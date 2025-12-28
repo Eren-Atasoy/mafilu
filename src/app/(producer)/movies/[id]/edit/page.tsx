@@ -12,6 +12,7 @@ import {
     Save,
     Upload,
     FileVideo,
+    Image as ImageIcon,
     X,
     Check,
     AlertCircle,
@@ -41,6 +42,7 @@ interface Movie {
     tags: string[] | null;
     status: string;
     bunny_video_id: string | null;
+    thumbnail_url: string | null;
 }
 
 export default function EditMoviePage() {
@@ -66,6 +68,10 @@ export default function EditMoviePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Thumbnail state
+    const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+    const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
 
     // Fetch movie data
     useEffect(() => {
@@ -106,6 +112,71 @@ export default function EditMoviePage() {
         fetchMovie();
     }, [movieId, router, supabase]);
 
+    const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Validate file type
+            if (!file.type.startsWith("image/")) {
+                setError("Sadece resim dosyaları yüklenebilir");
+                return;
+            }
+
+            // Validate size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                setError("Resim dosyası çok büyük (maksimum 5MB)");
+                return;
+            }
+
+            setThumbnailFile(file);
+            setError(null);
+        }
+    };
+
+    const handleUploadThumbnail = async () => {
+        if (!thumbnailFile || !movieId) return;
+
+        setIsUploadingThumbnail(true);
+        setError(null);
+
+        try {
+            const fileExt = thumbnailFile.name.split('.').pop();
+            const fileName = `${movieId}-${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            // Upload to Supabase Storage
+            const { error: uploadError } = await supabase.storage
+                .from('thumbnails')
+                .upload(filePath, thumbnailFile);
+
+            if (uploadError) throw uploadError;
+
+            // Get public URL
+            const { data: { publicUrl } } = supabase.storage
+                .from('thumbnails')
+                .getPublicUrl(filePath);
+
+            // Update movie record
+            const { error: updateError } = await supabase
+                .from("movies")
+                .update({ thumbnail_url: publicUrl })
+                .eq("id", movieId);
+
+            if (updateError) throw updateError;
+
+            setSuccess("Kapak fotoğrafı başarıyla yüklendi!");
+            setThumbnailFile(null);
+
+            // Refresh local state
+            setMovie(prev => prev ? { ...prev, thumbnail_url: publicUrl } : null);
+
+        } catch (err: any) {
+            console.error(err);
+            setError(err.message || "Kapak yüklenirken bir hata oluştu");
+        } finally {
+            setIsUploadingThumbnail(false);
+        }
+    };
+
     const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -115,7 +186,7 @@ export default function EditMoviePage() {
                 setError("Sadece MP4, WebM, MOV veya AVI formatları desteklenir");
                 return;
             }
-            
+
             // Security: Validate file size (max 2GB)
             const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
             if (file.size > maxSize) {
@@ -172,7 +243,7 @@ export default function EditMoviePage() {
                 const xhr = new XMLHttpRequest();
                 // Upload directly to Bunny.net
                 xhr.open("PUT", uploadUrl, true);
-                
+
                 // Security: Set Bunny.net authentication header
                 // Note: API key is scoped to this specific video ID only
                 xhr.setRequestHeader("AccessKey", accessKey);
@@ -192,7 +263,7 @@ export default function EditMoviePage() {
                         try {
                             const errorText = xhr.responseText;
                             let errorMessage = `Upload failed: ${xhr.status} ${xhr.statusText}`;
-                            
+
                             if (xhr.status === 403) {
                                 errorMessage = "Bunny.net API key yetkisi yok. Lütfen yöneticiye başvurun.";
                             } else if (xhr.status === 404) {
@@ -200,7 +271,7 @@ export default function EditMoviePage() {
                             } else if (errorText) {
                                 errorMessage = errorText;
                             }
-                            
+
                             reject(new Error(errorMessage));
                         } catch {
                             reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
@@ -437,6 +508,78 @@ export default function EditMoviePage() {
                                     )}
                                 </div>
                             )}
+
+                        </CardContent>
+                    </Card>
+
+                    {/* Thumbnail Upload */}
+                    <Card variant="glass">
+                        <CardHeader>
+                            <CardTitle className="text-lg">Kapak Fotoğrafı</CardTitle>
+                            <CardDescription>
+                                {movie?.thumbnail_url
+                                    ? "Kapak yüklendi. Değiştirmek için yeni bir resim seçin."
+                                    : "JPG, PNG veya WEBP (maks. 5MB)"
+                                }
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {movie?.thumbnail_url && !thumbnailFile && (
+                                <div className="mb-4 relative w-full aspect-video rounded-xl overflow-hidden border border-[#7C3AED]/20">
+                                    <img src={movie.thumbnail_url} alt="Thumbnail" className="w-full h-full object-cover" />
+                                </div>
+                            )}
+
+                            {!thumbnailFile ? (
+                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer hover:border-[#A855F7] transition-colors" style={{
+                                    borderColor: "rgba(124, 58, 237, 0.3)",
+                                    background: "rgba(21, 10, 36, 0.4)"
+                                }}>
+                                    <div className="flex flex-col items-center justify-center py-4">
+                                        <ImageIcon className="w-8 h-8 text-[#6B5F7C] mb-2" />
+                                        <p className="text-sm text-[#A197B0]">
+                                            <span className="font-semibold text-[#A855F7]">Fotoğraf seç</span>
+                                        </p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleThumbnailSelect}
+                                    />
+                                </label>
+                            ) : (
+                                <div className="p-4 rounded-xl" style={{ background: "rgba(21, 10, 36, 0.4)" }}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+                                            background: "rgba(124, 58, 237, 0.1)"
+                                        }}>
+                                            <ImageIcon className="w-6 h-6 text-[#A855F7]" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium text-[#F5F3FF] truncate">{thumbnailFile.name}</p>
+                                            <p className="text-sm text-[#6B5F7C]">
+                                                {(thumbnailFile.size / (1024 * 1024)).toFixed(1)} MB
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setThumbnailFile(null)}
+                                            className="p-2 text-[#6B5F7C] hover:text-red-400 transition-colors"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    <Button
+                                        className="mt-4 w-full"
+                                        onClick={handleUploadThumbnail}
+                                        isLoading={isUploadingThumbnail}
+                                    >
+                                        <Upload className="w-4 h-4" />
+                                        Kapak Yükle
+                                    </Button>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -558,6 +701,6 @@ export default function EditMoviePage() {
                     </Card>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
