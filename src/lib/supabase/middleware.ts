@@ -60,6 +60,28 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
+    // Producer-only routes - redirect to home if not a producer
+    const producerPaths = ['/dashboard', '/movies', '/earnings', '/settings'];
+    const isProducerPath = producerPaths.some((path) =>
+        request.nextUrl.pathname.startsWith(path)
+    );
+
+    if (isProducerPath && user) {
+        // Check user role from profiles table
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+
+        // Redirect non-producers to home (or a "become producer" page)
+        if (profile?.role !== 'producer' && profile?.role !== 'admin') {
+            const url = request.nextUrl.clone();
+            url.pathname = '/';
+            return NextResponse.redirect(url);
+        }
+    }
+
     // If user is logged in and trying to access auth pages, redirect to dashboard
     const authPaths = ['/login', '/signup'];
     const isAuthPath = authPaths.some((path) =>
@@ -68,7 +90,7 @@ export async function updateSession(request: NextRequest) {
 
     if (isAuthPath && user) {
         const url = request.nextUrl.clone();
-        url.pathname = '/dashboard';
+        url.pathname = '/';
         return NextResponse.redirect(url);
     }
 
