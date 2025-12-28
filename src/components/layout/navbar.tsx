@@ -94,15 +94,15 @@ export function Navbar() {
     return (
         <nav
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled
-                    ? "bg-[var(--mf-black-alt)]/90 backdrop-blur-lg border-b border-[var(--mf-primary-dark)]/10"
-                    : "bg-transparent"
+                ? "bg-[var(--mf-black-alt)]/90 backdrop-blur-lg border-b border-[var(--mf-primary-dark)]/10"
+                : "bg-transparent"
                 } ${isVisible ? "translate-y-0" : "-translate-y-full"
                 }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-3">
+                    <Link href="/" className="flex items-center gap-3" onClick={() => setIsMenuOpen(false)}>
                         <Film className="w-7 h-7 text-[var(--mf-primary-glow-alt)]" />
                         <span className="text-xl font-bold text-[var(--mf-text-high)] headline-serif tracking-tight">
                             Mafilu

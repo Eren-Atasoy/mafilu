@@ -1,4 +1,5 @@
-// import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
+import { getProducerAnalytics } from "@/lib/analytics/analytics-service";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     DollarSign,
@@ -12,44 +13,48 @@ import {
     CheckCircle
 } from "lucide-react";
 
-// Mock earnings data - in production, this will come from Stripe/Iyzico + view analytics
-const mockEarnings = {
-    totalEarnings: 2450.75,
-    thisMonth: 385.50,
-    lastMonth: 420.25,
-    pendingPayout: 185.50,
-    totalViews: 12580,
-    monthlyChange: -8.25,
-    transactions: [
-        { id: 1, type: "earning", title: "Kayıp Şehir - İzlenme geliri", amount: 45.50, date: "2024-12-25", status: "completed" },
-        { id: 2, type: "earning", title: "Gece Yarısı - İzlenme geliri", amount: 32.00, date: "2024-12-24", status: "completed" },
-        { id: 3, type: "payout", title: "Banka hesabına transfer", amount: -200.00, date: "2024-12-20", status: "completed" },
-        { id: 4, type: "earning", title: "Kayıp Şehir - İzlenme geliri", amount: 28.75, date: "2024-12-18", status: "pending" },
-        { id: 5, type: "earning", title: "Sessiz Çığlık - İzlenme geliri", amount: 15.25, date: "2024-12-15", status: "completed" },
-    ],
-    topMovies: [
-        { title: "Kayıp Şehir", views: 4520, earnings: 1250.50 },
-        { title: "Gece Yarısı", views: 3200, earnings: 680.25 },
-        { title: "Sessiz Çığlık", views: 2100, earnings: 320.00 },
-    ],
-};
-
 export default async function EarningsPage() {
-    // const supabase = await createClient();
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return null;
+    }
 
-    // In production, fetch real earnings data from transactions table
-    /*
-    const { data: movies } = await supabase
-        .from("movies")
-        .select("id, title, total_views, total_earnings")
-        .eq("producer_id", user?.id)
-        .order("total_earnings", { ascending: false })
-        .limit(5);
-    */
+    // Get real analytics
+    const analytics = await getProducerAnalytics(user.id);
 
-    const earnings = mockEarnings; // Replace with real data
+    // Calculate this month vs last month (mock for now since we don't have full history)
+    const thisMonthViews = analytics.viewsByDay.reduce((sum, d) => sum + d.views, 0);
+    const estimatedThisMonth = thisMonthViews * 0.001; // $0.001 per view
+
+    // Mock transaction history (in production, fetch from producer_payouts table)
+    const mockTransactions: Array<{
+        id: number;
+        type: string;
+        title: string;
+        amount: number;
+        date: string;
+        status: "pending" | "completed";
+    }> = [
+            { id: 1, type: "earning", title: "İzlenme geliri", amount: estimatedThisMonth || 0, date: new Date().toISOString().split("T")[0], status: "pending" },
+        ];
+
+    // Build earnings data combining real analytics with mock structure
+    const earnings = {
+        totalEarnings: analytics.estimatedRevenue,
+        thisMonth: estimatedThisMonth,
+        lastMonth: 0, // Would need historical data
+        pendingPayout: estimatedThisMonth,
+        totalViews: analytics.totalViews,
+        monthlyChange: 0, // Would need comparison
+        transactions: mockTransactions,
+        topMovies: analytics.topMovies.map(m => ({
+            title: m.title,
+            views: m.views,
+            earnings: m.views * 0.001,
+        })),
+    };
 
     return (
         <div className="space-y-8">

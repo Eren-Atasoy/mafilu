@@ -43,9 +43,12 @@ export default function BrowseClient({ movies, genres }: BrowseClientProps) {
             );
         }
 
-        // Genre filter
+        // Genre filter - case-insensitive comparison
         if (selectedGenre) {
-            result = result.filter(movie => movie.genre === selectedGenre);
+            result = result.filter(movie =>
+                movie.genre.toLowerCase() === selectedGenre.toLowerCase() ||
+                movie.genre === selectedGenre
+            );
         }
 
         // Sort
