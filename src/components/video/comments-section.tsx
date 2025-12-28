@@ -345,7 +345,7 @@ function CommentItem({
                                         <button
                                             onClick={() => {
                                                 onEdit(comment.id);
-                                                setEditContent(comment.content);
+                                                onEditContentChange(comment.content);
                                                 setShowMenu(false);
                                             }}
                                             className="w-full px-4 py-2 text-left text-sm text-[var(--mf-text-high)] hover:bg-[var(--mf-primary-dark)]/10 flex items-center gap-2"
