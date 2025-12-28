@@ -109,14 +109,27 @@ export default function EditMoviePage() {
     const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (!file.type.startsWith("video/")) {
-                setError("Lütfen geçerli bir video dosyası seçin");
+            // Security: Validate file type
+            const validTypes = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+            if (!validTypes.includes(file.type) && !file.type.startsWith("video/")) {
+                setError("Sadece MP4, WebM, MOV veya AVI formatları desteklenir");
                 return;
             }
-            if (file.size > 5 * 1024 * 1024 * 1024) {
-                setError("Video dosyası 5GB'dan küçük olmalıdır");
+            
+            // Security: Validate file size (max 2GB)
+            const maxSize = 2 * 1024 * 1024 * 1024; // 2GB
+            if (file.size > maxSize) {
+                setError("Video dosyası çok büyük (maksimum 2GB)");
                 return;
             }
+
+            // Security: Minimum file size check (prevent empty files)
+            const minSize = 1024; // 1KB
+            if (file.size < minSize) {
+                setError("Video dosyası çok küçük");
+                return;
+            }
+
             setVideoFile(file);
             setError(null);
         }
