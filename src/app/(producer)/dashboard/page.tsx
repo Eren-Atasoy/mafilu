@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                     <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                     <p className="text-slate-400 mt-1">Filmlerinizi yönetin ve performanslarını takip edin</p>
                 </div>
-                <Link href="/movies/new">
+                <Link href="/dashboard/movies/upload">
                     <Button>
                         <Plus className="w-5 h-5" />
                         Yeni Film Ekle
@@ -169,7 +169,7 @@ export default async function DashboardPage() {
                             <Film className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-300">Henüz film eklemediniz</h3>
                             <p className="text-slate-500 mt-1">İlk filminizi ekleyerek başlayın</p>
-                            <Link href="/movies/new" className="inline-block mt-4">
+                            <Link href="/dashboard/movies/upload" className="inline-block mt-4">
                                 <Button>
                                     <Plus className="w-5 h-5" />
                                     Film Ekle

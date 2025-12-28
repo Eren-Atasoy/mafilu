@@ -35,6 +35,11 @@ export default async function ProducerLayout({ children }: { children: ReactNode
         .eq("id", user.id)
         .single();
 
+    // Check if user is a producer or admin
+    if (profile?.role !== "producer" && profile?.role !== "admin") {
+        redirect("/"); // Non-producers redirected to home
+    }
+
     return (
         <div className="min-h-screen flex" style={{ background: "linear-gradient(180deg, #0A0510 0%, #1A0B2E 100%)" }}>
             {/* Sidebar */}

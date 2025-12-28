@@ -4,6 +4,9 @@ import { bunnyStream } from "@/lib/bunny";
 import { ViewCounter } from "@/components/video/view-counter";
 import { RelatedMovies } from "@/components/video/related-movies";
 import { MovieActions } from "@/components/video/movie-actions";
+import { AdvancedPlayer } from "@/components/video/advanced-player";
+import { RatingSection } from "@/components/video/rating-section";
+import { CommentsSection } from "@/components/video/comments-section";
 import Link from "next/link";
 import type { Metadata } from "next";
 import {
@@ -75,7 +78,7 @@ export default async function WatchPage({ params }: PageProps) {
         redirect(`/login?next=/watch/${id}`);
     }
 
-    // Fetch movie details
+    // Fetch movie details (without status filter to check if it exists)
     const { data: movie, error } = await supabase
         .from("movies")
         .select(`
@@ -87,11 +90,41 @@ export default async function WatchPage({ params }: PageProps) {
             )
         `)
         .eq("id", id)
-        .eq("status", "approved")
         .single();
 
     if (error || !movie) {
         notFound();
+    }
+
+    // Check if movie is approved
+    if (movie.status !== "approved") {
+        // Show a message instead of 404
+        return (
+            <div className="min-h-screen bg-[var(--mf-black)] flex items-center justify-center px-6">
+                <div className="max-w-md text-center space-y-6">
+                    <div className="w-20 h-20 rounded-full bg-yellow-500/10 flex items-center justify-center mx-auto">
+                        <Clock className="w-10 h-10 text-yellow-500" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-white mb-2">{movie.title}</h1>
+                        <p className="text-slate-400">
+                            {movie.status === "pending_review" 
+                                ? "Bu film henüz onay bekliyor. Onaylandıktan sonra izleyebilirsiniz."
+                                : movie.status === "rejected"
+                                ? "Bu film onaylanmamış."
+                                : "Bu film henüz yayında değil."}
+                        </p>
+                    </div>
+                    <Link
+                        href="/"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--mf-primary)] hover:bg-[var(--mf-primary-glow)] text-white font-medium transition-colors"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                        Ana Sayfaya Dön
+                    </Link>
+                </div>
+            </div>
+        );
     }
 
     // Fetch related movies
@@ -138,27 +171,22 @@ export default async function WatchPage({ params }: PageProps) {
 
             {/* Hero Video Player Section */}
             <section className="relative">
-                {/* Video Player - Full Width */}
-                <div className="relative w-full aspect-video max-h-[75vh] bg-black">
-                    {embedUrl ? (
-                        <iframe
-                            src={embedUrl}
-                            className="absolute inset-0 w-full h-full"
-                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-                            allowFullScreen
-                        />
-                    ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-                            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
-                                <Play className="w-10 h-10 text-white/60" />
-                            </div>
-                            <p className="text-white/60">Video yükleniyor...</p>
+                {/* Advanced Video Player */}
+                {embedUrl ? (
+                    <AdvancedPlayer
+                        videoId={movie.bunny_video_id || ""}
+                        embedUrl={embedUrl}
+                        movieId={id}
+                        duration={movie.duration_seconds || undefined}
+                    />
+                ) : (
+                    <div className="relative w-full aspect-video max-h-[75vh] bg-black flex flex-col items-center justify-center gap-4">
+                        <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center">
+                            <Play className="w-10 h-10 text-white/60" />
                         </div>
-                    )}
-
-                    {/* Bottom Gradient Overlay */}
-                    <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[var(--mf-black)] to-transparent pointer-events-none" />
-                </div>
+                        <p className="text-white/60">Video yükleniyor...</p>
+                    </div>
+                )}
             </section>
 
             {/* Content Section */}
@@ -204,6 +232,13 @@ export default async function WatchPage({ params }: PageProps) {
 
                     {/* Actions */}
                     <MovieActions movieId={id} movieTitle={movie.title} />
+
+                    {/* Rating Section */}
+                    <RatingSection
+                        movieId={id}
+                        averageRating={movie.average_rating || undefined}
+                        ratingCount={movie.rating_count || undefined}
+                    />
                 </div>
 
                 {/* Two Column Layout */}
@@ -233,6 +268,11 @@ export default async function WatchPage({ params }: PageProps) {
                                     ))}
                                 </div>
                             )}
+                        </div>
+
+                        {/* Comments Section */}
+                        <div className="glass-card p-6 md:p-8">
+                            <CommentsSection movieId={id} />
                         </div>
 
                         {/* Related Movies Section */}

@@ -65,7 +65,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "Reklamsız deneyim",
             "1 cihaz",
         ],
-        stripePriceId: process.env.STRIPE_BASIC_PRICE_ID,
+        stripePriceId: process.env.STRIPE_BASIC_PRICE_ID || "price_test_basic", // Test price ID - replace with real one from Stripe
     },
     {
         id: "premium",
@@ -82,7 +82,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "Çevrimdışı indirme",
             "Erken erişim yapımları",
         ],
-        stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID,
+        stripePriceId: process.env.STRIPE_PREMIUM_PRICE_ID || "price_test_premium", // Test price ID - replace with real one from Stripe
     },
     {
         id: "producer_pro",
@@ -98,7 +98,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
             "Öncelikli destek",
             "%70 gelir paylaşımı",
         ],
-        stripePriceId: process.env.STRIPE_PRODUCER_PRICE_ID,
+        stripePriceId: process.env.STRIPE_PRODUCER_PRICE_ID || "price_test_producer", // Test price ID - replace with real one from Stripe
     },
 ];
 

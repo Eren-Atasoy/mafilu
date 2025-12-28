@@ -94,6 +94,9 @@ export interface Movie {
     tags: string[];
     featured: boolean;
     featured_order: number | null;
+    total_views?: number;
+    average_rating?: number | null;
+    rating_count?: number | null;
     created_at: string;
     updated_at: string;
 }

@@ -54,11 +54,11 @@ export default async function BrowsePage() {
     const genres = [...new Set(movies?.map((m) => m.genre).filter(Boolean) || [])];
 
     return (
-        <div className="min-h-screen bg-[#0A0510] relative overflow-hidden">
+        <div className="min-h-screen bg-[var(--mf-black-alt)] relative overflow-hidden">
             {/* Background glows */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-30" style={{
-                    background: "radial-gradient(ellipse, rgba(124, 58, 237, 0.15) 0%, transparent 70%)",
+                    background: `radial-gradient(ellipse, rgba(124, 58, 237, 0.15) 0%, transparent 70%)`,
                     filter: "blur(80px)"
                 }} />
                 <div className="absolute bottom-0 left-0 w-[400px] h-[400px] opacity-20" style={{
@@ -69,8 +69,8 @@ export default async function BrowsePage() {
 
             <main className="relative z-10 max-w-7xl mx-auto px-6 py-20">
                 <div className="mb-8">
-                    <h1 className="text-4xl font-bold text-[#F5F3FF] headline-serif">Keşfet</h1>
-                    <p className="text-[#A197B0] mt-2">Bağımsız sinemanın en yeni, en çarpıcı yapımları.</p>
+                    <h1 className="text-4xl font-bold text-[var(--mf-text-high)] headline-serif">Keşfet</h1>
+                    <p className="text-[var(--mf-text-medium)] mt-2">Bağımsız sinemanın en yeni, en çarpıcı yapımları.</p>
                 </div>
 
                 <BrowseClient movies={processedMovies} genres={genres} />

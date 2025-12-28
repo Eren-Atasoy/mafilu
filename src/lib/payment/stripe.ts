@@ -14,8 +14,14 @@ function getStripe(): Stripe {
     if (!stripeInstance) {
         const secretKey = process.env.STRIPE_SECRET_KEY;
         if (!secretKey) {
-            throw new Error("STRIPE_SECRET_KEY is not configured");
+            throw new Error("STRIPE_SECRET_KEY is not configured. Please add it to .env.local. See STRIPE_SETUP.md for instructions.");
         }
+        
+        // Validate test key format (helpful error message)
+        if (!secretKey.startsWith("sk_test_") && !secretKey.startsWith("sk_live_")) {
+            throw new Error("Invalid Stripe key format. Secret keys must start with 'sk_test_' (test mode) or 'sk_live_' (live mode). See STRIPE_SETUP.md for instructions.");
+        }
+        
         stripeInstance = new Stripe(secretKey, {
             apiVersion: "2024-12-18.acacia" as any, // Bypass TS check for specific version string conflict
         });

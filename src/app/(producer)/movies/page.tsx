@@ -55,7 +55,7 @@ export default async function MoviesPage() {
                     <h1 className="text-3xl font-bold text-white">Filmlerim</h1>
                     <p className="text-slate-400 mt-1">Tüm filmlerinizi yönetin</p>
                 </div>
-                <Link href="/movies/new">
+                <Link href="/dashboard/movies/upload">
                     <Button>
                         <Plus className="w-5 h-5" />
                         Yeni Film Ekle
@@ -136,7 +136,7 @@ export default async function MoviesPage() {
                         <p className="text-slate-400 mb-6 max-w-md mx-auto">
                             Bağımsız sinema dünyasına katılın ve filmlerinizi milyonlarca izleyiciyle paylaşın.
                         </p>
-                        <Link href="/movies/new">
+                        <Link href="/dashboard/movies/upload">
                             <Button size="lg">
                                 <Plus className="w-5 h-5" />
                                 İlk Filminizi Ekleyin

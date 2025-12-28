@@ -1,0 +1,18 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "loginUser": "domateskafasi@gmail.com",
+  "loginPassword": "Erenatasoy123.",
+  "executionArgs": {
+    "projectName": "mafilu",
+    "projectPath": "D:\\Portfolio\\mafilu",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-gDBImqZh2QqHyhha6igZSWOcaCzcjis7lnUFrOFtU0InOSj7TuP7bL1nv3FtLzaT2kaiYPTt_W8ffL1sPCinBTgM5cpKqlpFldkRh7Xy8kIQUQnwM0X0LUfo0YxQHGdEroc"
+    }
+  },
+  "proxy": "http://86f7c0b1-4267-4d5b-9cb3-2bd0dbeec22b:ZKxpgNurPSOK1wn3ZCH3MR2uBwhkwKAB@tun.testsprite.com:8080"
+}

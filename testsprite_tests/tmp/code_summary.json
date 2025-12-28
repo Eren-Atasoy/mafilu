@@ -1,0 +1,214 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js 16",
+    "React 19",
+    "Tailwind CSS 4",
+    "Supabase",
+    "PostgreSQL",
+    "Bunny.net",
+    "Stripe",
+    "Redis",
+    "Framer Motion",
+    "Lucide React"
+  ],
+  "features": [
+    {
+      "name": "Authentication System",
+      "description": "Complete authentication flow with login, signup, password reset, and email confirmation",
+      "files": [
+        "src/app/(auth)/login/page.tsx",
+        "src/app/(auth)/signup/page.tsx",
+        "src/app/(auth)/forgot-password/page.tsx",
+        "src/app/(auth)/reset-password/page.tsx",
+        "src/lib/supabase/client.ts",
+        "src/lib/supabase/server.ts",
+        "src/lib/supabase/middleware.ts"
+      ]
+    },
+    {
+      "name": "Homepage",
+      "description": "Cinematic homepage with hero section, auto-rotating movie carousel, and categorized movie rows",
+      "files": [
+        "src/app/page.tsx",
+        "src/app/layout.tsx"
+      ]
+    },
+    {
+      "name": "Navigation Bar",
+      "description": "Responsive navbar with scroll behavior, user menu, and mobile menu",
+      "files": [
+        "src/components/layout/navbar.tsx"
+      ]
+    },
+    {
+      "name": "Browse Movies",
+      "description": "Movie discovery page with filtering by genre and search functionality",
+      "files": [
+        "src/app/browse/page.tsx",
+        "src/app/browse/browse-client.tsx"
+      ]
+    },
+    {
+      "name": "Watch Movie",
+      "description": "Movie player page with video streaming, movie details, related movies, and actions",
+      "files": [
+        "src/app/watch/[id]/page.tsx",
+        "src/components/video/advanced-player.tsx"
+      ]
+    },
+    {
+      "name": "Advanced Video Player",
+      "description": "Enhanced video player with playback position tracking, speed control, keyboard shortcuts, and continue watching",
+      "files": [
+        "src/components/video/advanced-player.tsx",
+        "src/app/api/videos/[id]/progress/route.ts"
+      ]
+    },
+    {
+      "name": "Comment System",
+      "description": "Movie comments with replies, edit, and delete functionality",
+      "files": [
+        "src/components/video/comments-section.tsx",
+        "src/app/api/movies/[id]/comments/route.ts",
+        "src/app/api/movies/[id]/comments/[commentId]/route.ts"
+      ]
+    },
+    {
+      "name": "Rating System",
+      "description": "1-5 star rating system with automatic average calculation via database triggers",
+      "files": [
+        "src/components/video/rating-section.tsx",
+        "src/app/api/movies/[id]/rating/route.ts"
+      ]
+    },
+    {
+      "name": "Movie Actions",
+      "description": "Like, watchlist, and share functionality for movies",
+      "files": [
+        "src/components/video/movie-actions.tsx",
+        "src/app/api/like/route.ts",
+        "src/app/api/watchlist/route.ts"
+      ]
+    },
+    {
+      "name": "View Counter",
+      "description": "Track and display movie view counts",
+      "files": [
+        "src/components/video/view-counter.tsx",
+        "src/app/api/videos/[id]/view/route.ts"
+      ]
+    },
+    {
+      "name": "Related Movies",
+      "description": "Display related movies based on genre",
+      "files": [
+        "src/components/video/related-movies.tsx"
+      ]
+    },
+    {
+      "name": "Watchlist",
+      "description": "User's personal watchlist page",
+      "files": [
+        "src/app/watchlist/page.tsx"
+      ]
+    },
+    {
+      "name": "Subscription Management",
+      "description": "Subscription pages for premium membership with Stripe integration",
+      "files": [
+        "src/app/subscription/page.tsx",
+        "src/app/subscription/success/page.tsx",
+        "src/app/subscription/cancel/page.tsx",
+        "src/app/api/checkout/route.ts",
+        "src/app/api/webhooks/stripe/route.ts",
+        "src/lib/payment/stripe.ts"
+      ]
+    },
+    {
+      "name": "Producer Dashboard",
+      "description": "Dashboard for filmmakers to manage movies, view analytics, and track earnings",
+      "files": [
+        "src/app/(producer)/dashboard/page.tsx",
+        "src/app/(producer)/movies/page.tsx",
+        "src/app/(producer)/movies/new/page.tsx",
+        "src/app/(producer)/movies/[id]/page.tsx",
+        "src/app/(producer)/movies/[id]/edit/page.tsx",
+        "src/app/(producer)/earnings/page.tsx",
+        "src/app/(producer)/settings/page.tsx"
+      ]
+    },
+    {
+      "name": "Admin Panel",
+      "description": "Admin interface for reviewing movies, managing users, and viewing analytics",
+      "files": [
+        "src/app/(admin)/admin/page.tsx",
+        "src/app/(admin)/admin/movies/page.tsx",
+        "src/app/(admin)/admin/movies/[id]/page.tsx",
+        "src/app/(admin)/admin/movies/[id]/movie-review-client.tsx",
+        "src/app/(admin)/admin/users/page.tsx",
+        "src/app/(admin)/admin/analytics/page.tsx",
+        "src/app/(admin)/admin/settings/page.tsx"
+      ]
+    },
+    {
+      "name": "Video Upload",
+      "description": "Video upload functionality with Bunny.net integration",
+      "files": [
+        "src/app/api/videos/upload/route.ts",
+        "src/app/api/videos/[id]/upload/route.ts",
+        "src/lib/bunny/index.ts",
+        "src/lib/bunny/stream.ts"
+      ]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components including button, card, input, and badge",
+      "files": [
+        "src/components/ui/button.tsx",
+        "src/components/ui/card.tsx",
+        "src/components/ui/input.tsx",
+        "src/components/ui/badge.tsx"
+      ]
+    },
+    {
+      "name": "Account Management",
+      "description": "User account settings and profile page",
+      "files": [
+        "src/app/account/page.tsx"
+      ]
+    },
+    {
+      "name": "Featured Movies API",
+      "description": "API endpoint for fetching featured movies",
+      "files": [
+        "src/app/api/movies/featured/route.ts"
+      ]
+    },
+    {
+      "name": "Health Check",
+      "description": "API endpoint for health monitoring",
+      "files": [
+        "src/app/api/health/route.ts"
+      ]
+    },
+    {
+      "name": "Payment Integration",
+      "description": "Payment processing with Stripe and PayTR integration",
+      "files": [
+        "src/lib/payment/index.ts",
+        "src/lib/payment/stripe.ts",
+        "src/lib/payment/paytr.ts",
+        "src/lib/payment/types.ts"
+      ]
+    },
+    {
+      "name": "Styling System",
+      "description": "Global CSS with custom properties and Tailwind configuration",
+      "files": [
+        "src/app/globals.css"
+      ]
+    }
+  ]
+}
+

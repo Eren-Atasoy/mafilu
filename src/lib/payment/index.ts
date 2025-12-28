@@ -37,8 +37,12 @@ export async function createCheckoutSession(
         if (!isStripeConfigured()) {
             throw new Error("Stripe is not configured");
         }
-        if (!plan.stripePriceId) {
-            throw new Error(`Stripe price not configured for plan: ${planId}`);
+        if (!plan.stripePriceId || plan.stripePriceId.startsWith("price_xxx") || plan.stripePriceId === "price_test_") {
+            throw new Error(
+                `Stripe price not configured for plan: ${planId}. ` +
+                `Please create a product and price in Stripe Dashboard and add the price ID to .env.local. ` +
+                `See STRIPE_PRICE_SETUP.md for instructions.`
+            );
         }
         return createStripeCheckoutSession(
             plan.stripePriceId,

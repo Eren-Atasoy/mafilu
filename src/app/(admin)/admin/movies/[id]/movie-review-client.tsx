@@ -225,6 +225,25 @@ export default function MovieReviewClient({ movie, embedUrl }: MovieReviewClient
 
                 {/* Sidebar: Producer Info & Actions */}
                 <div className="space-y-6">
+                    {/* Video Preview */}
+                    {embedUrl && (
+                        <Card variant="glass">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Video Önizleme</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+                                    <iframe
+                                        src={embedUrl}
+                                        className="absolute inset-0 w-full h-full"
+                                        allow="autoplay; encrypted-media; fullscreen"
+                                        allowFullScreen
+                                    />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {/* Producer Info */}
                     <Card variant="glass">
                         <CardHeader>

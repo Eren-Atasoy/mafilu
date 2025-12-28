@@ -14,7 +14,7 @@ export function HomeClient({ heroMovies, categories }: HomeClientProps) {
   const [watchlist, setWatchlist] = useState<Set<string>>(new Set());
   const [isLoadingWatchlist, setIsLoadingWatchlist] = useState(true);
 
-  // Fetch user's watchlist on mount
+  // Fetch user's watchlist on mount (only if authenticated)
   useEffect(() => {
     const fetchWatchlist = async () => {
       try {
@@ -25,9 +25,13 @@ export function HomeClient({ heroMovies, categories }: HomeClientProps) {
             (data.watchlist || []).map((item: any) => item.movies?.id).filter(Boolean) as string[]
           );
           setWatchlist(watchlistIds);
+        } else if (res.status === 401) {
+          // User not authenticated, this is expected - just set empty watchlist
+          setWatchlist(new Set());
         }
       } catch (error) {
-        console.error("Failed to fetch watchlist:", error);
+        // Silently fail for unauthenticated users
+        console.debug("Watchlist fetch skipped (user not authenticated)");
       } finally {
         setIsLoadingWatchlist(false);
       }
@@ -57,16 +61,21 @@ export function HomeClient({ heroMovies, categories }: HomeClientProps) {
       });
 
       if (!res.ok) {
-        // Revert on error
-        setWatchlist((prev) => {
-          const newSet = new Set(prev);
-          if (newSet.has(movieId)) {
-            newSet.delete(movieId);
-          } else {
-            newSet.add(movieId);
-          }
-          return newSet;
-        });
+        // Revert on error (unless 401 - user not authenticated)
+        if (res.status !== 401) {
+          setWatchlist((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(movieId)) {
+              newSet.delete(movieId);
+            } else {
+              newSet.add(movieId);
+            }
+            return newSet;
+          });
+        } else {
+          // User not authenticated, redirect to login
+          window.location.href = "/login";
+        }
       }
     } catch (error) {
       console.error("Failed to update watchlist:", error);

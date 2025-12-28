@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,33 @@ export default function SettingsPage() {
     const [bio, setBio] = useState("");
     const [website, setWebsite] = useState("");
 
+    // Load profile data on mount
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: profile } = await supabase
+                    .from("profiles")
+                    .select("full_name, producer_profile")
+                    .eq("id", user.id)
+                    .single();
+
+                if (profile) {
+                    setFullName(profile.full_name || "");
+                    const producerProfile = profile.producer_profile as any || {};
+                    setBio(producerProfile.bio || "");
+                    setWebsite(producerProfile.website || "");
+                }
+            } catch (err) {
+                console.error("Failed to load profile:", err);
+            }
+        };
+
+        loadProfile();
+    }, [supabase]);
+
     // Payment settings
     const [bankName, setBankName] = useState("");
     const [iban, setIban] = useState("");
@@ -47,13 +74,24 @@ export default function SettingsPage() {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error("Not authenticated");
 
+            // Get existing producer_profile
+            const { data: existingProfile } = await supabase
+                .from("profiles")
+                .select("producer_profile")
+                .eq("id", user.id)
+                .single();
+
+            const existingProducerProfile = existingProfile?.producer_profile || {};
+
             const { error: updateError } = await supabase
                 .from("profiles")
                 .update({
                     full_name: fullName,
-                    display_name: displayName,
-                    bio,
-                    website,
+                    producer_profile: {
+                        ...existingProducerProfile,
+                        bio,
+                        website,
+                    },
                     updated_at: new Date().toISOString(),
                 })
                 .eq("id", user.id);

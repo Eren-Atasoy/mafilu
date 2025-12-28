@@ -30,7 +30,10 @@ export async function POST(request: Request) {
         const availableProviders = getAvailableProviders();
         if (!availableProviders.includes(provider)) {
             return NextResponse.json(
-                { error: `Provider ${provider} is not configured` },
+                { 
+                    error: `Provider ${provider} is not configured`,
+                    message: "Please configure payment provider API keys in environment variables"
+                },
                 { status: 400 }
             );
         }
@@ -69,8 +72,21 @@ export async function POST(request: Request) {
         });
     } catch (error) {
         console.error("Checkout error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Checkout failed";
+        
+        // Provide helpful error messages
+        if (errorMessage.includes("STRIPE_SECRET_KEY") || errorMessage.includes("not configured")) {
+            return NextResponse.json(
+                { 
+                    error: "Payment provider not configured",
+                    message: "Please configure STRIPE_SECRET_KEY in environment variables"
+                },
+                { status: 503 }
+            );
+        }
+        
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Checkout failed" },
+            { error: errorMessage },
             { status: 500 }
         );
     }
