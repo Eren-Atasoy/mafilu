@@ -144,13 +144,24 @@ export default function EditMoviePage() {
 
             const { videoId, uploadUrl, accessKey } = await createResponse.json();
 
+            // Security: Validate response data
+            if (!videoId || !uploadUrl || !accessKey) {
+                throw new Error("Upload bilgileri alınamadı");
+            }
+
+            // Security: Validate upload URL is from Bunny.net
+            if (!uploadUrl.includes("video.bunnycdn.com")) {
+                throw new Error("Geçersiz upload URL");
+            }
+
             // 2. Upload Content Directly to Bunny.net (Direct Upload)
             await new Promise<void>((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 // Upload directly to Bunny.net
                 xhr.open("PUT", uploadUrl, true);
                 
-                // Set Bunny.net authentication header
+                // Security: Set Bunny.net authentication header
+                // Note: API key is scoped to this specific video ID only
                 xhr.setRequestHeader("AccessKey", accessKey);
                 xhr.setRequestHeader("Content-Type", "application/octet-stream");
 

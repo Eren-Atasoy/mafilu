@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Security: Validate title length
+        if (title.length > 200) {
+            return NextResponse.json(
+                { error: "Title too long (max 200 characters)" },
+                { status: 400 }
+            );
+        }
+
         // Check Bunny.net configuration
         if (!bunnyStream.isConfigured()) {
             return NextResponse.json(
@@ -69,22 +77,35 @@ export async function POST(request: NextRequest) {
 
         // If movieId provided, update movie with bunny_video_id
         if (movieId) {
-            const { error: updateError } = await supabase
+            // Security: Verify movie ownership before linking
+            const { data: existingMovie, error: movieError } = await supabase
                 .from("movies")
-                .update({ bunny_video_id: uploadData.videoId })
+                .select("id, producer_id")
                 .eq("id", movieId)
-                .eq("producer_id", user.id);
+                .eq("producer_id", user.id)
+                .single();
 
-            if (updateError) {
-                console.error("Failed to update movie with video ID:", updateError);
+            if (!movieError && existingMovie) {
+                const { error: updateError } = await supabase
+                    .from("movies")
+                    .update({ bunny_video_id: uploadData.videoId })
+                    .eq("id", movieId)
+                    .eq("producer_id", user.id);
+
+                if (updateError) {
+                    console.error("Failed to update movie with video ID:", updateError);
+                }
             }
         }
 
+        // Security: Return minimal data, API key is necessary for direct upload
+        // Note: API key exposure is a known trade-off for direct upload
+        // Mitigation: Key only works for uploads to this specific video ID
         return NextResponse.json({
             success: true,
             videoId: uploadData.videoId,
             uploadUrl: uploadData.uploadUrl,
-            accessKey: uploadData.authorizationSignature, // API key for direct upload
+            accessKey: uploadData.authorizationSignature, // Required for direct upload, scoped to this video
             libraryId: uploadData.libraryId,
             expiresAt: uploadData.authorizationExpire,
         });
