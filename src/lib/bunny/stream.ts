@@ -91,8 +91,21 @@ class BunnyStreamService {
 
             if (!createResponse.ok) {
                 const error = await createResponse.text();
-                console.error("Bunny create video error:", error);
-                return { success: false, videoId: "", error: "Failed to create video entry" };
+                console.error("Bunny create video error:", {
+                    status: createResponse.status,
+                    statusText: createResponse.statusText,
+                    error,
+                    libraryId: this.libraryId,
+                });
+                
+                let errorMessage = "Failed to create video entry";
+                if (createResponse.status === 403) {
+                    errorMessage = "Bunny.net API key yetkisi yok. API key ve Library ID'yi kontrol edin.";
+                } else if (createResponse.status === 401) {
+                    errorMessage = "Bunny.net API key geçersiz. API key'i kontrol edin.";
+                }
+                
+                return { success: false, videoId: "", error: errorMessage };
             }
 
             const video: BunnyVideoCreateResponse = await createResponse.json();
@@ -114,8 +127,10 @@ class BunnyStreamService {
     /**
      * Upload video file directly (for smaller files < 100MB)
      */
-    async uploadVideo(videoId: string, file: ArrayBuffer): Promise<boolean> {
-        if (!this.isConfigured()) return false;
+    async uploadVideo(videoId: string, file: ArrayBuffer): Promise<{ success: boolean; error?: string }> {
+        if (!this.isConfigured()) {
+            return { success: false, error: "Bunny.net not configured" };
+        }
 
         try {
             const blob = new Blob([file], { type: "application/octet-stream" });
@@ -131,10 +146,30 @@ class BunnyStreamService {
                 }
             );
 
-            return response.ok;
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Bunny.net upload error:", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorText,
+                    videoId,
+                    libraryId: this.libraryId,
+                });
+                
+                let errorMessage = `Bunny.net upload failed: ${response.status} ${response.statusText}`;
+                if (response.status === 403) {
+                    errorMessage = "Bunny.net API key yetkisi yok. API key ve Library ID'yi kontrol edin.";
+                } else if (response.status === 404) {
+                    errorMessage = "Video bulunamadı. Video ID'yi kontrol edin.";
+                }
+                
+                return { success: false, error: errorMessage };
+            }
+
+            return { success: true };
         } catch (error) {
             console.error("Bunny.net upload error:", error);
-            return false;
+            return { success: false, error: error instanceof Error ? error.message : "Network error" };
         }
     }
 

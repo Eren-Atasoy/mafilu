@@ -161,7 +161,12 @@ export default function EditMoviePage() {
                     if (xhr.status >= 200 && xhr.status < 300) {
                         resolve();
                     } else {
-                        reject(new Error("Upload failed"));
+                        try {
+                            const errorData = JSON.parse(xhr.responseText);
+                            reject(new Error(errorData.error || errorData.details || "Upload failed"));
+                        } catch {
+                            reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+                        }
                     }
                 };
 

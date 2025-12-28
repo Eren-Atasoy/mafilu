@@ -17,27 +17,33 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // 2. Check Ownership
+        // 2. Check if user is a producer/admin
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+
+        if (profile?.role !== "producer" && profile?.role !== "admin") {
+            return NextResponse.json(
+                { error: "Only producers can upload videos" },
+                { status: 403 }
+            );
+        }
+
+        // 3. Check Ownership (optional - video might not be linked to movie yet)
         const { data: movie } = await supabase
             .from("movies")
             .select("id, producer_id")
             .eq("bunny_video_id", videoId)
-            //.eq("producer_id", user.id) // This query might fail if multiple movies share same videoId (unlikely) or if we don't have movie yet linked purely by videoId? 
-            // Actually videoId is unique. Use it to find movie?
-            // Wait, we updated the movie with videoId in the previous step (POST /api/videos/upload).
-            // So we can find the movie by bunny_video_id.
             .single();
 
-        // If we can't find movie by videoId, maybe we should pass movieId in query param?
-        // But let's assume the client called POST /upload (which links movie <-> videoId) BEFORE calling this PUT.
-
-        if (!movie) {
-            // Fallback: Check if the user is a producer/admin. We might not have linked it yet?
-            // But for security, strictly we should only allow if we can verify ownership.
-            console.warn(`Upload attempted for video ${videoId} but no linked movie found yet.`);
-            // Allow for now if user is authenticated producer, assuming they just created it.
-            // Ideally we'd check if videoId exists in Bunny and if it was created recently?
-            // For strict security: The POST /upload returns videoId AND links it to movie. So `movie` SHOULD exist.
+        // If movie exists, verify ownership
+        if (movie && movie.producer_id !== user.id && profile?.role !== "admin") {
+            return NextResponse.json(
+                { error: "You don't have permission to upload to this video" },
+                { status: 403 }
+            );
         }
 
         // 3. Proxy Upload to Bunny
@@ -54,10 +60,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         // But Next.js App Router Request body handling is stream-based.
         // We really want to pipe `request.body` directly to `fetch`.
 
-        const success = await bunnyStream.uploadVideo(videoId, arrayBuffer);
+        const uploadResult = await bunnyStream.uploadVideo(videoId, arrayBuffer);
 
-        if (!success) {
-            return NextResponse.json({ error: "Upload to provider failed" }, { status: 502 });
+        if (!uploadResult.success) {
+            return NextResponse.json(
+                { 
+                    error: uploadResult.error || "Upload to provider failed",
+                    details: uploadResult.error
+                },
+                { status: 502 }
+            );
         }
 
         return NextResponse.json({ success: true });
