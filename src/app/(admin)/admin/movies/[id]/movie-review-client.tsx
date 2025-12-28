@@ -14,8 +14,10 @@ import {
     Film,
     AlertTriangle,
     LucideIcon,
+    RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface MovieData {
     id: string;
@@ -23,6 +25,7 @@ interface MovieData {
     status: string;
     genre?: string;
     release_year?: number;
+    duration_seconds?: number;
     description?: string;
     created_at: string;
     submitted_at?: string;
@@ -37,15 +40,44 @@ interface MovieData {
 interface MovieReviewClientProps {
     movie: MovieData;
     embedUrl: string | null;
+    thumbnailUrl: string | null;
 }
 
-export default function MovieReviewClient({ movie, embedUrl }: MovieReviewClientProps) {
+export default function MovieReviewClient({ movie, embedUrl, thumbnailUrl }: MovieReviewClientProps) {
     const router = useRouter();
     const supabase = createClient();
 
     const [isLoading, setIsLoading] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
+
+    const formatDuration = (seconds?: number) => {
+        if (!seconds) return "-";
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return `${h}s ${m}dk`;
+        return `${m}dk`;
+    };
+
+    const handleSyncDuration = async () => {
+        setIsSyncing(true);
+        try {
+            const res = await fetch(`/api/movies/${movie.id}/sync-duration`, {
+                method: "POST"
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Failed to sync");
+
+            router.refresh();
+        } catch (error: any) {
+            console.error("Sync error:", error);
+            alert("Süre senkronizasyonu başarısız: " + error.message);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
     const handleApprove = async () => {
         setIsLoading(true);
@@ -174,6 +206,27 @@ export default function MovieReviewClient({ movie, embedUrl }: MovieReviewClient
                                     <p className="text-white">{movie.release_year || "-"}</p>
                                 </div>
                                 <div>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm text-slate-500">Süre</p>
+                                        <button
+                                            onClick={handleSyncDuration}
+                                            disabled={isSyncing}
+                                            className="p-1 hover:bg-slate-800 rounded-full transition-colors"
+                                            title="Bunny.net'ten süreyi güncelle"
+                                        >
+                                            <RefreshCw className={`w-3 h-3 text-slate-400 ${isSyncing ? "animate-spin" : ""}`} />
+                                        </button>
+                                    </div>
+                                    <p className="text-white flex items-center gap-2">
+                                        {formatDuration(movie.duration_seconds)}
+                                        {movie.duration_seconds && (
+                                            <span className="text-xs text-slate-500">
+                                                ({movie.duration_seconds} sn)
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                                <div>
                                     <p className="text-sm text-slate-500">Oluşturulma</p>
                                     <p className="text-white">
                                         {new Date(movie.created_at).toLocaleDateString("tr-TR", {
@@ -225,19 +278,19 @@ export default function MovieReviewClient({ movie, embedUrl }: MovieReviewClient
 
                 {/* Sidebar: Producer Info & Actions */}
                 <div className="space-y-6">
-                    {/* Video Preview */}
-                    {embedUrl && (
+                    {/* Cover Image Preview */}
+                    {thumbnailUrl && (
                         <Card variant="glass">
                             <CardHeader>
-                                <CardTitle className="text-lg">Video Önizleme</CardTitle>
+                                <CardTitle className="text-lg">Kapak Fotoğrafı</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
-                                    <iframe
-                                        src={embedUrl}
-                                        className="absolute inset-0 w-full h-full"
-                                        allow="autoplay; encrypted-media; fullscreen"
-                                        allowFullScreen
+                                <div className="relative w-full aspect-[2/3] bg-slate-800 rounded-lg overflow-hidden">
+                                    <Image
+                                        src={thumbnailUrl}
+                                        alt={movie.title}
+                                        fill
+                                        className="object-cover"
                                     />
                                 </div>
                             </CardContent>

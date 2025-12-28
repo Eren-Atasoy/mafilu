@@ -97,14 +97,14 @@ class BunnyStreamService {
                     error,
                     libraryId: this.libraryId,
                 });
-                
+
                 let errorMessage = "Failed to create video entry";
                 if (createResponse.status === 403) {
                     errorMessage = "Bunny.net API key yetkisi yok. API key ve Library ID'yi kontrol edin.";
                 } else if (createResponse.status === 401) {
                     errorMessage = "Bunny.net API key geçersiz. API key'i kontrol edin.";
                 }
-                
+
                 return { success: false, videoId: "", error: errorMessage };
             }
 
@@ -155,14 +155,14 @@ class BunnyStreamService {
                     videoId,
                     libraryId: this.libraryId,
                 });
-                
+
                 let errorMessage = `Bunny.net upload failed: ${response.status} ${response.statusText}`;
                 if (response.status === 403) {
                     errorMessage = "Bunny.net API key yetkisi yok. API key ve Library ID'yi kontrol edin.";
                 } else if (response.status === 404) {
                     errorMessage = "Video bulunamadı. Video ID'yi kontrol edin.";
                 }
-                
+
                 return { success: false, error: errorMessage };
             }
 

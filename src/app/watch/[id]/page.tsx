@@ -4,7 +4,7 @@ import { bunnyStream } from "@/lib/bunny";
 import { ViewCounter } from "@/components/video/view-counter";
 import { RelatedMovies } from "@/components/video/related-movies";
 import { MovieActions } from "@/components/video/movie-actions";
-import { AdvancedPlayer } from "@/components/video/advanced-player";
+import { CustomPlayer } from "@/components/video/custom-player";
 import { RatingSection } from "@/components/video/rating-section";
 import { CommentsSection } from "@/components/video/comments-section";
 import Link from "next/link";
@@ -151,8 +151,9 @@ export default async function WatchPage({ params }: PageProps) {
             : undefined,
     }));
 
-    const embedUrl = movie.bunny_video_id
-        ? bunnyStream.getEmbedUrl(movie.bunny_video_id, true)
+    // Get HLS playback URL for custom player
+    const playbackUrl = movie.bunny_video_id
+        ? bunnyStream.getPlaybackUrl(movie.bunny_video_id)
         : null;
 
     const thumbnailUrl = movie.thumbnail_url ||
@@ -208,13 +209,15 @@ export default async function WatchPage({ params }: PageProps) {
 
             {/* Hero Video Player Section */}
             <section className="relative">
-                {/* Advanced Video Player */}
-                {embedUrl ? (
-                    <AdvancedPlayer
+                {/* Custom Video Player with HLS */}
+                {playbackUrl ? (
+                    <CustomPlayer
                         videoId={movie.bunny_video_id || ""}
-                        embedUrl={embedUrl}
-                        movieId={id}
-                        duration={movie.duration_seconds || undefined}
+                        playbackUrl={playbackUrl}
+                        posterUrl={thumbnailUrl}
+                        duration={movie.duration_seconds}
+                        title={movie.title}
+                        description={movie.description}
                     />
                 ) : (
                     <div className="relative w-full aspect-video max-h-[75vh] bg-black flex flex-col items-center justify-center gap-4">
@@ -239,8 +242,18 @@ export default async function WatchPage({ params }: PageProps) {
                     <div className="flex flex-wrap items-center gap-4 mb-6">
                         {/* Rating */}
                         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--mf-primary)]/10 border border-[var(--mf-primary)]/20">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-[var(--mf-text-high)] font-semibold">{rating}</span>
+                            <div className="flex items-center gap-0.5">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                        key={star}
+                                        className={`w-4 h-4 ${star <= Math.round(movie.average_rating || 0)
+                                                ? "text-yellow-400 fill-yellow-400"
+                                                : "text-gray-500"
+                                            }`}
+                                    />
+                                ))}
+                            </div>
+                            <span className="text-[var(--mf-text-high)] font-semibold ml-1">{rating}</span>
                         </div>
 
                         {/* Year */}
@@ -378,9 +391,7 @@ export default async function WatchPage({ params }: PageProps) {
                                     </p>
                                 </div>
                             </div>
-                            <button className="w-full py-3 rounded-xl bg-[var(--mf-primary)] hover:bg-[var(--mf-primary-glow)] text-white font-medium transition-colors">
-                                Takip Et
-                            </button>
+
                         </div>
 
                         {/* Movie Details Card */}

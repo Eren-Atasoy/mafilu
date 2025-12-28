@@ -32,5 +32,8 @@ export default async function AdminMovieReviewPage({ params }: PageProps) {
         ? bunnyStream.getEmbedUrl(movie.bunny_video_id)
         : null;
 
-    return <MovieReviewClient movie={movie} embedUrl={embedUrl} />;
+    const thumbnailUrl = movie.thumbnail_url
+        || (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : null);
+
+    return <MovieReviewClient movie={movie} embedUrl={embedUrl} thumbnailUrl={thumbnailUrl} />;
 }

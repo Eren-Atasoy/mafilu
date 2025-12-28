@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useCallback } from "react";
 
 interface AdvancedPlayerProps {
     videoId: string;
@@ -11,65 +11,13 @@ interface AdvancedPlayerProps {
 
 export function AdvancedPlayer({ embedUrl, duration }: AdvancedPlayerProps) {
     const iframeRef = useRef<HTMLIFrameElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Send command to Bunny.net player via postMessage
-    const sendPlayerCommand = useCallback((command: string, value?: number) => {
-        if (iframeRef.current?.contentWindow) {
-            iframeRef.current.contentWindow.postMessage(
-                { event: command, value },
-                "*"
-            );
+    // Focus the iframe to enable keyboard shortcuts
+    const focusPlayer = useCallback(() => {
+        if (iframeRef.current) {
+            iframeRef.current.focus();
         }
-    }, []);
-
-    // Handle keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Only handle if container is focused or no input is focused
-            const activeElement = document.activeElement;
-            const isInputFocused = activeElement?.tagName === "INPUT" ||
-                activeElement?.tagName === "TEXTAREA";
-
-            if (isInputFocused) return;
-
-            switch (e.key) {
-                case "ArrowLeft":
-                    e.preventDefault();
-                    sendPlayerCommand("seek", -5); // Seek back 5 seconds
-                    break;
-                case "ArrowRight":
-                    e.preventDefault();
-                    sendPlayerCommand("seek", 5); // Seek forward 5 seconds
-                    break;
-                case " ": // Spacebar
-                    e.preventDefault();
-                    sendPlayerCommand("togglePlay");
-                    break;
-                case "f":
-                case "F":
-                    e.preventDefault();
-                    sendPlayerCommand("toggleFullscreen");
-                    break;
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [sendPlayerCommand]);
-
-    // Listen for messages from the Bunny player
-    useEffect(() => {
-        const handleMessage = (event: MessageEvent) => {
-            // Handle Bunny.net player events if needed
-            if (event.data?.event === "ready") {
-                setIsLoading(false);
-            }
-        };
-
-        window.addEventListener("message", handleMessage);
-        return () => window.removeEventListener("message", handleMessage);
     }, []);
 
     // Format duration display
@@ -86,12 +34,11 @@ export function AdvancedPlayer({ embedUrl, duration }: AdvancedPlayerProps) {
 
     return (
         <div
-            ref={containerRef}
-            className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl group"
+            className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl group cursor-pointer"
             style={{
                 border: "1px solid rgba(255, 255, 255, 0.1)",
             }}
-            tabIndex={0}
+            onClick={focusPlayer}
         >
             {/* Loading Overlay */}
             {isLoading && (
@@ -109,15 +56,26 @@ export function AdvancedPlayer({ embedUrl, duration }: AdvancedPlayerProps) {
                 </div>
             )}
 
-            {/* Video Iframe - Using Native Bunny Player */}
+            {/* Video Iframe - Using Native Bunny Player 
+                Auto-focuses on load to enable keyboard shortcuts
+            */}
             <iframe
                 ref={iframeRef}
                 src={embedUrl}
                 className="absolute inset-0 w-full h-full"
                 allow="autoplay; encrypted-media; fullscreen; picture-in-picture; gyroscope; accelerometer"
                 allowFullScreen
-                onLoad={() => setIsLoading(false)}
+                onLoad={() => {
+                    setIsLoading(false);
+                    // Auto-focus iframe to enable keyboard shortcuts
+                    setTimeout(() => {
+                        if (iframeRef.current) {
+                            iframeRef.current.focus();
+                        }
+                    }, 100);
+                }}
                 style={{ border: 'none' }}
+                tabIndex={0}
             />
 
             {/* Duration Badge (if available) */}
@@ -126,14 +84,6 @@ export function AdvancedPlayer({ embedUrl, duration }: AdvancedPlayerProps) {
                     {durationDisplay}
                 </div>
             )}
-
-            {/* Keyboard Shortcut Hint */}
-            <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                <div className="flex gap-2 text-xs text-white/60">
-                    <span className="px-2 py-1 bg-black/50 rounded">← → 5sn</span>
-                    <span className="px-2 py-1 bg-black/50 rounded">Space Oynat</span>
-                </div>
-            </div>
 
             {/* Ambient Glow Effect (Decoration) - Using site's purple theme */}
             <div
@@ -145,4 +95,5 @@ export function AdvancedPlayer({ embedUrl, duration }: AdvancedPlayerProps) {
         </div>
     );
 }
+
 

@@ -52,7 +52,7 @@ export async function getFeaturedMovies(): Promise<FeaturedMovie[]> {
 
     const { data: movies, error } = await supabase
       .from("movies")
-      .select("id, title, description, genre, release_year, bunny_video_id, featured, featured_order, created_at, average_rating, rating_count")
+      .select("id, title, description, genre, release_year, duration_seconds, bunny_video_id, thumbnail_url, featured, featured_order, created_at, average_rating, rating_count")
       .eq("status", "approved")
       .eq("featured", true)
       .order("featured_order", { ascending: true, nullsFirst: false })
@@ -68,7 +68,7 @@ export async function getFeaturedMovies(): Promise<FeaturedMovie[]> {
       // Fallback: get most recent approved movies if no featured movies
       const { data: fallbackMovies } = await supabase
         .from("movies")
-        .select("id, title, description, genre, release_year, bunny_video_id, created_at, average_rating, rating_count")
+        .select("id, title, description, genre, release_year, duration_seconds, bunny_video_id, thumbnail_url, created_at, average_rating, rating_count")
         .eq("status", "approved")
         .order("created_at", { ascending: false })
         .limit(3);
@@ -87,18 +87,29 @@ export async function getFeaturedMovies(): Promise<FeaturedMovie[]> {
  * Format a movie from database into FeaturedMovie format
  */
 function formatFeaturedMovie(movie: any, index: number): FeaturedMovie {
-  const subtitles = ["Mafilu Orijinal", "Yeni Sezon", "Ödüllü Yapım"];
-  const taglines = [
-    "Her sır, bir bedel ister.",
-    "Geçmiş her zaman geri döner.",
-    "Sanat, acının en güzel hali.",
-  ];
+  // Create tagline from description or title
+  const tagline = movie.description
+    ? movie.description.split('.')[0].substring(0, 60) + (movie.description.length > 60 ? "..." : "")
+    : movie.title;
 
   const duration = movie.duration_seconds
     ? formatDuration(movie.duration_seconds)
-    : "2s 00dk";
+    : "Belirsiz";
 
-  // Calculate rating from average_rating field (calculated by trigger)
+  // Determine maturity based on genre - rough estimation
+  const maturityMap: Record<string, string> = {
+    horror: "18+",
+    thriller: "16+",
+    crime: "16+",
+    drama: "13+",
+    romance: "13+",
+    comedy: "7+",
+    animation: "7+",
+    documentary: "7+",
+    sci_fi: "13+"
+  };
+
+  // Calculate rating from average_rating field
   const rating = movie.average_rating
     ? movie.average_rating.toFixed(1)
     : movie.rating_count && movie.rating_count > 0
@@ -108,17 +119,16 @@ function formatFeaturedMovie(movie: any, index: number): FeaturedMovie {
   return {
     id: movie.id,
     title: movie.title,
-    subtitle: subtitles[index % subtitles.length],
-    tagline: taglines[index % taglines.length],
+    subtitle: movie.release_year ? `${movie.release_year} | Mafilu` : "Mafilu Orijinal",
+    tagline: tagline,
     description: movie.description,
     genre: formatGenre(movie.genre),
     year: movie.release_year,
     rating,
     duration,
-    maturity: "16+",
-    thumbnailUrl: movie.bunny_video_id
-      ? bunnyStream.getThumbnailUrl(movie.bunny_video_id)
-      : undefined,
+    maturity: maturityMap[movie.genre] || "13+",
+    thumbnailUrl: movie.thumbnail_url
+      || (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined),
     bunny_video_id: movie.bunny_video_id,
   };
 }
@@ -134,7 +144,7 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
     // Get all approved movies
     const { data: allMovies, error } = await supabase
       .from("movies")
-      .select("id, title, description, genre, release_year, bunny_video_id, featured, created_at, average_rating, rating_count")
+      .select("id, title, description, genre, release_year, bunny_video_id, thumbnail_url, featured, created_at, average_rating, rating_count")
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
@@ -168,9 +178,8 @@ export async function getMovieCategories(): Promise<MovieCategory[]> {
         rating,
         isNew: new Date(movie.created_at) > thirtyDaysAgo,
         isOriginal: movie.featured || false,
-        thumbnailUrl: movie.bunny_video_id
-          ? bunnyStream.getThumbnailUrl(movie.bunny_video_id)
-          : undefined,
+        thumbnailUrl: movie.thumbnail_url
+          || (movie.bunny_video_id ? bunnyStream.getThumbnailUrl(movie.bunny_video_id) : undefined),
       };
     });
 

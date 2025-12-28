@@ -81,7 +81,7 @@ export async function GET(request: Request) {
         }
 
         // Get all watchlist items
-        const { data: watchlist } = await supabase
+        const { data: watchlist, error: watchlistError } = await supabase
             .from("watchlist")
             .select(`
                 id,
@@ -91,11 +91,18 @@ export async function GET(request: Request) {
                     title,
                     genre,
                     bunny_video_id,
-                    total_views
+                    thumbnail_url,
+                    duration_seconds,
+                    release_year
                 )
             `)
             .eq("user_id", user.id)
             .order("added_at", { ascending: false });
+
+        if (watchlistError) {
+            console.error("Watchlist query error:", watchlistError);
+            throw watchlistError;
+        }
 
         return NextResponse.json({ watchlist: watchlist || [] });
     } catch (error) {
